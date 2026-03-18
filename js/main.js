@@ -145,6 +145,37 @@ document.getElementById('home-btn').addEventListener('click', e => {
 document.getElementById('bookmarks-nav-btn').addEventListener('click', () => navigate('/bookmarks'));
 document.getElementById('stats-nav-btn').addEventListener('click', () => navigate('/stats'));
 
+// ── Burger menu (mobile) ─────────────────────────────────────────────────────
+(function setupBurger() {
+    const burger  = document.getElementById('burger-btn');
+    const nav     = document.getElementById('nav-actions');
+    if (!burger || !nav) return;
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'nav-overlay';
+    document.body.appendChild(overlay);
+
+    const toggle = () => {
+        const open = !burger.classList.contains('open');
+        burger.classList.toggle('open', open);
+        nav.classList.toggle('open', open);
+        overlay.classList.toggle('open', open);
+        burger.setAttribute('aria-expanded', String(open));
+        document.body.style.overflow = open ? 'hidden' : '';
+    };
+
+    burger.addEventListener('click', toggle);
+    overlay.addEventListener('click', toggle);
+
+    // Close on nav button click
+    nav.querySelectorAll('.nav-icon-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (burger.classList.contains('open')) toggle();
+        });
+    });
+})();
+
 init();
 
 // ── Service Worker registration ────────────────────────────────────────────────

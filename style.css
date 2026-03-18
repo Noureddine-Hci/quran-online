@@ -1,23 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;600;700&display=swap');
 
 :root {
-    --primary:        #065f46;
-    --primary-light:  #10b981;
-    --accent:         #d4af37;
-    --bg-dark:        #0f172a;
-    --card-bg:        rgba(255, 255, 255, 0.05);
-    --glass-border:   rgba(255, 255, 255, 0.1);
-    --text-main:      #f8fafc;
-    --text-muted:     #94a3b8;
+    --primary:        #044a36;
+    --primary-light:  #0d9668;
+    --accent:         #c9a227;
+    --bg-dark:        #0a1120;
+    --card-bg:        rgba(255, 255, 255, 0.04);
+    --glass-border:   rgba(255, 255, 255, 0.08);
+    --text-main:      #f1f5f9;
+    --text-muted:     #8896ab;
     --font-arabic:    'MeQuran', 'Amiri', serif;
     --font-sans:      'Inter', sans-serif;
     --transition:     all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     /* theme-aware aliases (dark default) */
-    --bg:             #0f172a;
-    --nav-bg:         rgba(15, 23, 42, 0.8);
-    --nav-bg-scrolled:rgba(15, 23, 42, 0.95);
-    --hero-bg:        linear-gradient(135deg, rgba(6,95,70,0.2) 0%, rgba(15,23,42,0.5) 100%);
-    --options-bg:     #1a1a2e;
+    --bg:             #0a1120;
+    --nav-bg:         rgba(8, 14, 28, 0.85);
+    --nav-bg-scrolled:rgba(8, 14, 28, 0.97);
+    --hero-bg:        linear-gradient(135deg, rgba(4,74,54,0.25) 0%, rgba(10,17,32,0.6) 100%);
+    --options-bg:     #111827;
 }
 
 /* ── Light theme ─────────────────────────────────────────────────────────── */
@@ -103,6 +103,15 @@ header {
     margin-left: auto;
     display: flex;
     align-items: center;
+    position: static;
+    flex-direction: row;
+    width: auto;
+    height: auto;
+    background: none;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    overflow: visible;
 }
 
 .logo {
@@ -442,6 +451,33 @@ main {
 
 
 /* ── Nav icon button ─────────────────────────────────────────────────────── */
+/* ── Burger button (hidden on desktop) ────────────────────────────────── */
+.burger-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    margin-left: auto;
+    z-index: 1100;
+}
+
+.burger-btn span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--text-main);
+    border-radius: 2px;
+    transition: var(--transition);
+}
+
+.burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.burger-btn.open span:nth-child(2) { opacity: 0; }
+.burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
 .nav-icon-btn {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--glass-border);
@@ -946,6 +982,57 @@ main {
 
 /* ── Responsive — 768px (tablette portrait) ──────────────────────────────── */
 @media (max-width: 768px) {
+    .burger-btn {
+        display: flex;
+    }
+
+    #nav-actions {
+        position: fixed;
+        top: 0;
+        right: -280px;
+        width: 270px;
+        height: 100vh;
+        background: var(--bg);
+        border-left: 1px solid var(--glass-border);
+        flex-direction: column;
+        align-items: stretch;
+        padding: 5rem 1.5rem 2rem;
+        gap: 0.5rem;
+        transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1050;
+        overflow-y: auto;
+    }
+
+    #nav-actions.open {
+        right: 0;
+        box-shadow: -8px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-icon-btn {
+        margin-right: 0;
+        justify-content: flex-start;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        border-radius: 12px;
+    }
+
+    #lang-selector-container {
+        margin-top: 0.5rem;
+    }
+
+    /* Overlay behind menu */
+    .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+    }
+
+    .nav-overlay.open {
+        display: block;
+    }
+
     .container {
         padding: 0 1rem;
     }
@@ -1163,11 +1250,11 @@ tajweed.ikhf_shfw         { color: #D500B7; }   /* Ikhfa Shafawi       — rose-
 tajweed.iqlb              { color: #26BFFD; }   /* Iqlab               — cyan         */
 tajweed.idgh_ghn          { color: #169200; }   /* Idgham avec Ghunna  — vert         */
 tajweed.idgh_w_ghn        { color: #169200; }   /* Idgham sans Ghunna  — vert         */
-tajweed.idghm_shfw        { color: #A1A1A1; }   /* Idgham Shafawi      — gris clair   */
+tajweed.idghm_shfw        { color: #58B800; }   /* Idgham Shafawi      — vert clair   */
 tajweed.idgh_mus          { color: #169200; }   /* Idgham Mutajanisayn — vert         */
 tajweed.madda_normal      { color: #537FFF; }   /* Madd normal         — bleu         */
 tajweed.madda_permissible { color: #4050FF; }   /* Madd permissible    — bleu moyen   */
-tajweed.madda_obligatory  { color: #000EBC; }   /* Madd obligatoire    — bleu foncé   */
+tajweed.madda_obligatory  { color: #2144C1; }   /* Madd obligatoire    — bleu         */
 tajweed.madda_necessary   { color: #000EBC; }   /* Madd nécessaire     — bleu foncé   */
 
 /* Désactivé : hériter couleur parent + pas de tooltip */
