@@ -165,15 +165,82 @@ document.getElementById('stats-nav-btn').addEventListener('click', () => navigat
         document.body.style.overflow = open ? 'hidden' : '';
     };
 
+    const close = () => {
+        if (burger.classList.contains('open')) toggle();
+    };
+
     burger.addEventListener('click', toggle);
-    overlay.addEventListener('click', toggle);
+    overlay.addEventListener('click', close);
 
     // Close on nav button click
-    nav.querySelectorAll('.nav-icon-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (burger.classList.contains('open')) toggle();
+    nav.querySelectorAll('.nav-icon-btn').forEach(btn => btn.addEventListener('click', close));
+
+    // Close on page navigation
+    window.addEventListener('hashchange', close);
+})();
+
+// ── Bottom nav (mobile) ──────────────────────────────────────────────────────
+(function setupBottomNav() {
+    const nav = document.getElementById('bottom-nav');
+    if (!nav) return;
+
+    const updateActive = () => {
+        const hash = location.hash || '#/';
+        nav.querySelectorAll('.bottom-nav-item').forEach(btn => {
+            const target = btn.dataset.target;
+            const isActive = (target === '/' && (hash === '#/' || hash === '#' || hash === ''))
+                || (target === '/bookmarks' && hash === '#/bookmarks')
+                || (target === '/stats' && hash === '#/stats')
+                || (target !== '/' && target !== '/bookmarks' && target !== '/stats' && target !== 'search' && hash.startsWith('#' + target));
+            btn.classList.toggle('active', isActive);
         });
+    };
+
+    nav.addEventListener('click', e => {
+        const btn = e.target.closest('.bottom-nav-item');
+        if (!btn) return;
+        const target = btn.dataset.target;
+        if (target === 'search') {
+            navigate('/');
+            setTimeout(() => {
+                const searchBar = document.querySelector('.search-bar');
+                if (searchBar) { searchBar.focus(); searchBar.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            }, 300);
+        } else {
+            navigate(target);
+        }
     });
+
+    window.addEventListener('hashchange', updateActive);
+    updateActive();
+})();
+
+// ── Auto-hide header on scroll ───────────────────────────────────────────────
+(function setupAutoHideNav() {
+    const nav = document.getElementById('main-nav');
+    let lastY = 0;
+    let ticking = false;
+
+    window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            const y = window.scrollY;
+            if (y > 100 && y > lastY + 5) {
+                nav.classList.add('nav-hidden');
+            } else if (y < lastY - 5) {
+                nav.classList.remove('nav-hidden');
+            }
+            lastY = y;
+            ticking = false;
+        });
+    }, { passive: true });
+})();
+
+// ── OLED dark mode toggle ────────────────────────────────────────────────────
+(function setupOLED() {
+    const oled = storage.get('oled', false);
+    if (oled) document.documentElement.setAttribute('data-oled', 'true');
 })();
 
 init();

@@ -148,6 +148,14 @@ export async function renderSurahReader(id) {
                         <span class="speed-label">${t.speedLabel}</span>
                         ${speedOptions.map(s => `<button class="speed-btn${s === savedSpeed ? ' active' : ''}" data-speed="${s}">×${s}</button>`).join('')}
                     </div>
+                    <div class="font-size-controls">
+                        <button class="font-size-btn" id="font-decrease" aria-label="${state.currentLang === 'fr' ? 'Réduire la taille' : 'Decrease size'}">−</button>
+                        <span class="font-size-label" id="font-size-val">${storage.get('arabicFontSize', 100)}%</span>
+                        <button class="font-size-btn" id="font-increase" aria-label="${state.currentLang === 'fr' ? 'Augmenter la taille' : 'Increase size'}">+</button>
+                    </div>
+                    <button id="oled-toggle" class="toggle-btn${storage.get('oled', false) ? ' active' : ''}" aria-pressed="${storage.get('oled', false)}">
+                        OLED
+                    </button>
                 </div>
 
                 <!-- Tajweed legend -->
@@ -176,7 +184,14 @@ export async function renderSurahReader(id) {
 
                 <button id="back-btn" class="glass" style="margin-top:2rem;padding:0.5rem 1rem;cursor:pointer;color:white;border-radius:8px;">${t.back}</button>
             </div>
+            <!-- Sticky mini player -->
+            <div id="sticky-player" class="sticky-player hidden">
+                <button id="sticky-play-btn" class="sticky-play-btn">${ICON_PLAY}</button>
+                <div id="sticky-status" class="sticky-status">${t.ready}</div>
+                <button id="sticky-stop-btn" class="sticky-stop-btn">✕</button>
+            </div>
             <div class="ayah-list">${ayahCards}</div>
+            <div class="swipe-hint">← ${state.currentLang === 'fr' ? 'Glissez pour changer de sourate' : 'Swipe to change surah'} →</div>
         </div>
     `);
 
@@ -266,6 +281,35 @@ export async function renderSurahReader(id) {
         });
     });
 
+    // ── Font size controls ─────────────────────────────────────────────────────
+    const fontSizeVal = document.getElementById('font-size-val');
+    let currentFontSize = storage.get('arabicFontSize', 100);
+
+    const applyFontSize = () => {
+        document.querySelectorAll('.ayah-text').forEach(el => {
+            el.style.fontSize = `${currentFontSize}%`;
+        });
+        if (fontSizeVal) fontSizeVal.textContent = `${currentFontSize}%`;
+    };
+    applyFontSize();
+
+    document.getElementById('font-decrease')?.addEventListener('click', () => {
+        if (currentFontSize > 60) { currentFontSize -= 10; storage.set('arabicFontSize', currentFontSize); applyFontSize(); }
+    });
+    document.getElementById('font-increase')?.addEventListener('click', () => {
+        if (currentFontSize < 200) { currentFontSize += 10; storage.set('arabicFontSize', currentFontSize); applyFontSize(); }
+    });
+
+    // ── OLED toggle ──────────────────────────────────────────────────────────────
+    document.getElementById('oled-toggle')?.addEventListener('click', function () {
+        const on = !this.classList.contains('active');
+        this.classList.toggle('active', on);
+        this.setAttribute('aria-pressed', String(on));
+        storage.set('oled', on);
+        if (on) document.documentElement.setAttribute('data-oled', 'true');
+        else document.documentElement.removeAttribute('data-oled');
+    });
+
     // ── Bookmark buttons ──────────────────────────────────────────────────────
     document.querySelectorAll('.bookmark-btn').forEach(btn => {
         btn.addEventListener('click', e => {
@@ -330,6 +374,23 @@ export async function renderSurahReader(id) {
     const customSelect = document.getElementById('reciter-custom-select');
     const selectedText = document.getElementById('selected-reciter-name');
 
+    // ── Sticky player refs ──────────────────────────────────────────────────
+    const stickyPlayer  = document.getElementById('sticky-player');
+    const stickyPlayBtn = document.getElementById('sticky-play-btn');
+    const stickyStatus  = document.getElementById('sticky-status');
+    const stickyStopBtn = document.getElementById('sticky-stop-btn');
+
+    const audioSection = document.querySelector('.audio-controls');
+    let stickyObserver = null;
+    if (audioSection && stickyPlayer) {
+        stickyObserver = new IntersectionObserver(([entry]) => {
+            const audioEl = document.getElementById('surah-audio');
+            const isPlaying = audioEl && audioEl.src && !audioEl.paused;
+            stickyPlayer.classList.toggle('hidden', entry.isIntersecting || !isPlaying);
+        }, { threshold: 0 });
+        stickyObserver.observe(audioSection);
+    }
+
     let selectedReciterId = savedReciter;
     let currentAudioData  = null;
     let currentAyahIndex  = 0;
@@ -348,7 +409,11 @@ export async function renderSurahReader(id) {
         audioPlayer.src          = currentAudioData.ayahs[index].audio;
         audioPlayer.playbackRate = storage.get('audioSpeed', 1);
         audioPlayer.play();
-        status.innerText = `${tr.ayah} ${index + 1} / ${currentAudioData.ayahs.length}`;
+        const statusText = `${tr.ayah} ${index + 1} / ${currentAudioData.ayahs.length}`;
+        status.innerText = statusText;
+        if (stickyStatus) stickyStatus.innerText = statusText;
+        if (stickyPlayBtn) render(stickyPlayBtn, ICON_PAUSE);
+        if (stickyPlayer) stickyPlayer.classList.remove('hidden');
     };
 
     const stopPlayback = () => {
@@ -360,9 +425,28 @@ export async function renderSurahReader(id) {
         loopAyahIndex    = -1;
         setPlayBtn(ICON_PLAY, tr.listen);
         status.innerText = tr.ready;
+        if (stickyPlayer) stickyPlayer.classList.add('hidden');
+        if (stickyPlayBtn) render(stickyPlayBtn, ICON_PLAY);
         document.querySelectorAll('.ayah-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
         document.querySelectorAll('.loop-btn').forEach(b => b.classList.remove('active'));
     };
+
+    // ── Sticky player controls ──────────────────────────────────────────────
+    stickyPlayBtn?.addEventListener('click', () => {
+        if (audioPlayer.src && currentAudioData) {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                render(stickyPlayBtn, ICON_PAUSE);
+                setPlayBtn(ICON_PAUSE, i18n[state.currentLang].pause);
+            } else {
+                audioPlayer.pause();
+                render(stickyPlayBtn, ICON_PLAY);
+                setPlayBtn(ICON_PLAY, i18n[state.currentLang].resume);
+            }
+        }
+    });
+
+    stickyStopBtn?.addEventListener('click', stopPlayback);
 
     // ── Loop buttons ──────────────────────────────────────────────────────────
     document.querySelectorAll('.loop-btn').forEach(btn => {
