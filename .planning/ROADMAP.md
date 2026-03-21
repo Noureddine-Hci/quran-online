@@ -9,11 +9,11 @@
 
 **Goal:** Les couleurs Tajweed correspondent exactement aux Mushafs imprimés
 **Requirements:** TAJ-01, TAJ-02, TAJ-03
+**Plans:** 2 plans
 
-**Plans:**
-- 1.1 — Audit et mapping palette couleurs Tajweed (AlQuran Cloud → couleurs Mushaf standard)
-- 1.2 — Mise à jour CSS Tajweed avec palette exacte + légende correcte
-- 1.3 — Tooltip hover sur lettres Tajweed (nom de la règle)
+Plans:
+- [ ] 01-01-PLAN.md — Palette CSS standard Mushaf + couleurs legend dots (TAJ-01, TAJ-02)
+- [ ] 01-02-PLAN.md — Tooltip noms français localisés (TAJ-03)
 
 **Success criteria:**
 - [ ] Comparer côte à côte app vs image Mushaf : les couleurs sont identiques
