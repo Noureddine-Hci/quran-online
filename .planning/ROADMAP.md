@@ -46,7 +46,7 @@ Plans:
 
 ---
 
-## Phase 3 — Lecteur Audio Avancé 🔧 PARTIAL
+## Phase 3 — Lecteur Audio Avancé ✅ DONE
 
 **Goal:** Contrôle complet de la récitation : repeat, suivi mot par mot, vitesse
 **Requirements:** AUD-01, AUD-02, AUD-03, AUD-04
@@ -56,13 +56,13 @@ Plans:
 - [x] AUD-02 — Repeat plage X→Y, N fois (panel avec inputs + compteur de round)
 - [x] AUD-04 — Vitesses étendues 0.5x → 2x (7 options)
 
-**Pending:**
-- [ ] AUD-03 — Word-by-word highlighting (nécessite API quran.com pour timestamps mot-à-mot)
+**Also delivered:**
+- [x] AUD-03 — Word-by-word highlighting via quran.com API (timestamps + chapter audio)
 
 **Success criteria:**
 - [x] Bouton repeat sur verset → relit en boucle jusqu'à désactivation
 - [x] Repeat plage : configurer verset 3 à 7, répéter 5 fois → fonctionne
-- [ ] Récitation : le mot en cours est mis en évidence en temps réel
+- [x] Récitation : le mot en cours est mis en évidence en temps réel
 - [x] Vitesse 0.75x → récitation ralentie correctement
 
 ---
