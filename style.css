@@ -1447,22 +1447,39 @@ main {
     .swipe-hint { display: block; }
 }
 
-/* ── Tajweed colors — palette standard Coran Tajweed imprimé ──────────────── */
-tajweed.ham_wasl          { color: #AAAAAA; }   /* Hamza Wasl          — gris         */
-tajweed.slnt              { color: #AAAAAA; }   /* Lettre silencieuse  — gris         */
-tajweed.qlq               { color: #DD0008; }   /* Qalqala             — rouge        */
-tajweed.ghn               { color: #FF7E1E; }   /* Ghunna              — orange       */
-tajweed.ikhf              { color: #9400A8; }   /* Ikhfa               — violet       */
-tajweed.ikhf_shfw         { color: #D500B7; }   /* Ikhfa Shafawi       — rose-violet  */
-tajweed.iqlb              { color: #26BFFD; }   /* Iqlab               — cyan         */
-tajweed.idgh_ghn          { color: #169200; }   /* Idgham avec Ghunna  — vert         */
-tajweed.idgh_w_ghn        { color: #169200; }   /* Idgham sans Ghunna  — vert         */
-tajweed.idghm_shfw        { color: #58B800; }   /* Idgham Shafawi      — vert clair   */
-tajweed.idgh_mus          { color: #169200; }   /* Idgham Mutajanisayn — vert         */
-tajweed.madda_normal      { color: #537FFF; }   /* Madd normal         — bleu         */
-tajweed.madda_permissible { color: #4050FF; }   /* Madd permissible    — bleu moyen   */
-tajweed.madda_obligatory  { color: #2144C1; }   /* Madd obligatoire    — bleu         */
-tajweed.madda_necessary   { color: #000EBC; }   /* Madd nécessaire     — bleu foncé   */
+/* ── Tajweed colors — palette standard Mushaf imprimé (EasyQuran/GlobalQuran) ── */
+tajweed.ham_wasl          { color: #AAAAAA; }   /* Hamza Wasl           — gris           */
+tajweed.slnt              { color: #AAAAAA; }   /* Lettre silencieuse   — gris           */
+tajweed.qlq               { color: #009be5; }   /* Qalqala              — bleu ciel      */
+tajweed.ghn               { color: #008e50; }   /* Ghunna               — vert           */
+tajweed.ikhf              { color: #008e50; }   /* Ikhfa                — vert           */
+tajweed.ikhf_shfw         { color: #58B800; }   /* Ikhfa Shafawi        — vert clair     */
+tajweed.iqlb              { color: #008e50; }   /* Iqlab                — vert           */
+tajweed.idgh_ghn          { color: #008e50; }   /* Idgham avec Ghunna   — vert           */
+tajweed.idgh_w_ghn        { color: #169200; }   /* Idgham sans Ghunna   — vert           */
+tajweed.idghm_shfw        { color: #58B800; }   /* Idgham Shafawi       — vert clair     */
+tajweed.idgh_mus          { color: #169200; }   /* Idgham Mutajanisayn  — vert           */
+tajweed.madda_normal      { color: #bb8800; }   /* Madd normal 2v       — cumin/doré     */
+tajweed.madda_permissible { color: #dd6600; }   /* Madd permissible 2/4/6v — orange      */
+tajweed.madda_obligatory  { color: #cc2200; }   /* Madd obligatoire 4-5v — rouge sang    */
+tajweed.madda_necessary   { color: #a00000; }   /* Madd nécessaire 6v   — rouge foncé    */
+
+/* ── Legend dot colors (mirrors tajweed palette above) ─────────────────────── */
+.legend-dot.ham_wasl          { color: #AAAAAA; }
+.legend-dot.slnt              { color: #AAAAAA; }
+.legend-dot.qlq               { color: #009be5; }
+.legend-dot.ghn               { color: #008e50; }
+.legend-dot.ikhf              { color: #008e50; }
+.legend-dot.ikhf_shfw         { color: #58B800; }
+.legend-dot.iqlb              { color: #008e50; }
+.legend-dot.idgh_ghn          { color: #008e50; }
+.legend-dot.idgh_w_ghn        { color: #169200; }
+.legend-dot.idghm_shfw        { color: #58B800; }
+.legend-dot.idgh_mus          { color: #169200; }
+.legend-dot.madda_normal      { color: #bb8800; }
+.legend-dot.madda_permissible { color: #dd6600; }
+.legend-dot.madda_obligatory  { color: #cc2200; }
+.legend-dot.madda_necessary   { color: #a00000; }
 
 /* Désactivé : hériter couleur parent + pas de tooltip */
 .ayah-text.no-tajweed tajweed             { color: inherit !important; }

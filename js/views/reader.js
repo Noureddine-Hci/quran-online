@@ -30,6 +30,20 @@ const TAJWEED_LEGEND = {
     ghn:               { fr: ['Ghunna',               'Nasalisation 2 temps'],          en: ['Ghunna',               '2-beat nasalization']            }
 };
 
+// ── Localize tajweed tooltip descriptions using TAJWEED_LEGEND ───────────────
+function localizeDescription(parsedHtml, lang) {
+    return tajweedParser.getMeta().reduce((html, meta) => {
+        const legend = TAJWEED_LEGEND[meta.default_css_class];
+        if (!legend) return html;
+        const localName = lang === 'fr' ? legend.fr[0] : legend.en[0];
+        const escaped = meta.description.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return html.replace(
+            new RegExp(`data-description="${escaped}"`, 'g'),
+            `data-description="${localName}"`
+        );
+    }, parsedHtml);
+}
+
 // ── SVG icons ──────────────────────────────────────────────────────────────────
 const ICON_PLAY  = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
 const ICON_PAUSE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
@@ -85,7 +99,7 @@ export async function renderSurahReader(id) {
         }).join('');
 
     // ── Pré-calcul des deux versions de texte ─────────────────────────────────
-    const tajweedTexts = arabicData.ayahs.map(a => tajweedParser.parse(a.text));
+    const tajweedTexts = arabicData.ayahs.map(a => localizeDescription(tajweedParser.parse(a.text), state.currentLang));
     const plainTexts   = arabicPlain.ayahs.map(a => a.text);
 
     // ── Ayah cards ────────────────────────────────────────────────────────────
