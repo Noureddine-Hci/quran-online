@@ -79,7 +79,10 @@ export const i18n = {
         rangeStart:        'Lancer',
         rangeStop:         'Arrêter',
         rangeStatus:       'Répétition',
-        rangeOf:           'sur'
+        rangeOf:           'sur',
+        wordByWord:        'Mot par mot',
+        wbwOn:             'Suivi mot par mot activé',
+        wbwOff:            'Suivi mot par mot désactivé'
     },
     en: {
         heroTitle:         'The Holy Quran',
@@ -156,6 +159,9 @@ export const i18n = {
         rangeStart:        'Start',
         rangeStop:         'Stop',
         rangeStatus:       'Repeating',
-        rangeOf:           'of'
+        rangeOf:           'of',
+        wordByWord:        'Word by word',
+        wbwOn:             'Word-by-word tracking on',
+        wbwOff:            'Word-by-word tracking off'
     }
 };

@@ -85,6 +85,31 @@ export async function fetchMushafPage(page, edition = 'quran-tajweed') {
     }
 }
 
+// ── Quran.com API (word-by-word timestamps) ──────────────────────────────────
+const QURAN_COM_URL = 'https://api.quran.com/api/v4';
+
+export async function fetchWordTimestamps(chapter, reciterId = 7) {
+    try {
+        const res  = await fetchWithTimeout(`${QURAN_COM_URL}/chapter_recitations/${reciterId}/${chapter}?segments=true`);
+        const data = await res.json();
+        return data.audio_file || null;
+    } catch (e) {
+        console.error('fetchWordTimestamps:', e);
+        return null;
+    }
+}
+
+export async function fetchVerseWords(chapter) {
+    try {
+        const res  = await fetchWithTimeout(`${QURAN_COM_URL}/verses/by_chapter/${chapter}?words=true&word_fields=text_uthmani&per_page=300`);
+        const data = await res.json();
+        return data.verses || [];
+    } catch (e) {
+        console.error('fetchVerseWords:', e);
+        return [];
+    }
+}
+
 export async function fetchReciters() {
     try {
         const res  = await fetchWithTimeout(`${BASE_URL}/edition?format=audio&language=ar`);

@@ -3,7 +3,7 @@ import { i18n }                         from '../i18n.js';
 import { storage }                      from '../storage.js';
 import { navigate }                     from '../router.js';
 import { app, render, showLoading }     from '../dom.js';
-import { fetchSurahDetail, fetchTranslation, fetchAudio, fetchTransliteration, fetchTafsir } from '../api.js';
+import { fetchSurahDetail, fetchTranslation, fetchAudio, fetchTransliteration, fetchTafsir, fetchWordTimestamps, fetchVerseWords } from '../api.js';
 import { isBookmarked, toggleBookmark } from './bookmarks.js';
 import { recordAyahRead }               from './stats.js';
 import { Tajweed }                      from '../tajweed.js';
@@ -62,11 +62,12 @@ export async function renderSurahReader(id) {
     state.currentSurahId = id;
     showLoading();
 
-    const [arabicData, arabicPlain, translationData, translitData] = await Promise.all([
+    const [arabicData, arabicPlain, translationData, translitData, verseWords] = await Promise.all([
         fetchSurahDetail(id, 'quran-tajweed'),
         fetchSurahDetail(id, 'quran-uthmani'),
         fetchTranslation(id, state.selectedTranslationId),
-        fetchTransliteration(id)
+        fetchTransliteration(id),
+        fetchVerseWords(id)
     ]);
 
     if (!arabicData || !arabicPlain || !translationData) {
@@ -106,6 +107,16 @@ export async function renderSurahReader(id) {
     const tajweedTexts = arabicData.ayahs.map(a => localizeDescription(tajweedParser.parse(a.text), state.currentLang));
     const plainTexts   = arabicPlain.ayahs.map(a => a.text);
 
+    // ── Word-by-word spans (for highlighting) ───────────────────────────────
+    const wbwTexts = arabicData.ayahs.map((ayah, index) => {
+        const verse = verseWords?.[index];
+        if (!verse?.words) return plainTexts[index];
+        return verse.words
+            .filter(w => w.char_type_name === 'word')
+            .map(w => `<span class="wbw-word" data-verse="${id}:${ayah.numberInSurah}" data-word="${w.position}">${w.text_uthmani || w.text}</span>`)
+            .join(' ');
+    });
+
     // ── Ayah cards ────────────────────────────────────────────────────────────
     const ayahCards = arabicData.ayahs.map((ayah, index) => {
         const bookmarked   = isBookmarked(id, ayah.numberInSurah);
@@ -131,6 +142,7 @@ export async function renderSurahReader(id) {
                     <div class="ayah-text${memClass}" lang="ar">
                         <span class="text-tajweed${tajweedOn ? '' : ' hidden'}">${tajweedTexts[index]}</span>
                         <span class="text-plain${tajweedOn ? ' hidden' : ''}">${plainTexts[index]}</span>
+                        <span class="text-wbw hidden">${wbwTexts[index]}</span>
                     </div>
                     ${translitText ? `<div class="ayah-translit${translitOn ? '' : ' hidden'}">${translitText}</div>` : ''}
                     <div class="ayah-translation">${translationData.ayahs[index].text}</div>
@@ -172,6 +184,10 @@ export async function renderSurahReader(id) {
                     </button>
                     <button id="range-repeat-toggle" class="toggle-btn" aria-expanded="false">
                         ${ICON_LOOP} ${t.rangeRepeat}
+                    </button>
+                    <button id="wbw-toggle" class="toggle-btn" aria-pressed="false">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        ${t.wordByWord}
                     </button>
                     <div class="speed-btns" role="group" aria-label="${t.speedLabel}">
                         <span class="speed-label">${t.speedLabel}</span>
@@ -497,12 +513,71 @@ export async function renderSurahReader(id) {
 
     rangeStopBtn.addEventListener('click', stopRangeRepeat);
 
+    // ── Word-by-word toggle + state ─────────────────────────────────────────
+    let wbwMode = false;
+    let wbwTimestamps = null;
+
+    document.getElementById('wbw-toggle').addEventListener('click', async function () {
+        wbwMode = !wbwMode;
+        this.classList.toggle('active', wbwMode);
+        this.setAttribute('aria-pressed', String(wbwMode));
+
+        if (wbwMode) {
+            // Show wbw spans, hide plain+tajweed
+            document.querySelectorAll('.text-wbw').forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll('.text-tajweed, .text-plain').forEach(el => el.classList.add('hidden'));
+            // Fetch timestamps if not yet loaded
+            if (!wbwTimestamps) {
+                wbwTimestamps = await fetchWordTimestamps(id);
+            }
+        } else {
+            // Restore previous view (tajweed or plain)
+            const tajOn = storage.get('tajweedOn', true);
+            document.querySelectorAll('.text-wbw').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.text-tajweed').forEach(el => el.classList.toggle('hidden', !tajOn));
+            document.querySelectorAll('.text-plain').forEach(el => el.classList.toggle('hidden', tajOn));
+            document.querySelectorAll('.wbw-word').forEach(el => el.classList.remove('wbw-active'));
+        }
+    });
+
+    // ── Word highlight engine ───────────────────────────────────────────────
+    const highlightWord = (currentTimeMs) => {
+        if (!wbwMode || !wbwTimestamps?.timestamps) return;
+
+        // Clear all highlights
+        document.querySelectorAll('.wbw-word.wbw-active').forEach(el => el.classList.remove('wbw-active'));
+
+        // Find which verse and word is active
+        for (const ts of wbwTimestamps.timestamps) {
+            if (currentTimeMs < ts.timestamp_from || currentTimeMs > ts.timestamp_to) continue;
+            if (!ts.segments) continue;
+
+            for (const seg of ts.segments) {
+                if (seg.length < 3) continue;
+                const [wordPos, startMs, endMs] = seg;
+                if (currentTimeMs >= startMs && currentTimeMs <= endMs) {
+                    const wordEl = document.querySelector(`.wbw-word[data-verse="${ts.verse_key}"][data-word="${wordPos}"]`);
+                    if (wordEl) {
+                        wordEl.classList.add('wbw-active');
+                        wordEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+            }
+        }
+    };
+
     let selectedReciterId = savedReciter;
     let currentAudioData  = null;
     let currentAyahIndex  = 0;
     let loopAyahIndex     = -1;
 
     const setPlayBtn = (icon, label) => render(playBtn, `${icon} ${label}`);
+
+    // ── Word-by-word timeupdate ──────────────────────────────────────────────
+    audioPlayer.addEventListener('timeupdate', () => {
+        if (wbwMode) highlightWord(audioPlayer.currentTime * 1000);
+    });
 
     const playAyah = index => {
         const tr = i18n[state.currentLang];
@@ -638,6 +713,42 @@ export async function renderSurahReader(id) {
         status.innerText      = tr.loading;
         playBtn.disabled      = true;
         playBtn.style.opacity = '0.5';
+
+        // ── Word-by-word mode: use quran.com chapter audio ──────────────
+        if (wbwMode) {
+            if (!wbwTimestamps) wbwTimestamps = await fetchWordTimestamps(id);
+            if (wbwTimestamps?.audio_url) {
+                currentAudioData = { wbw: true };
+                audioPlayer.src          = wbwTimestamps.audio_url;
+                audioPlayer.playbackRate = storage.get('audioSpeed', 1);
+                audioPlayer.play();
+                playBtn.disabled      = false;
+                playBtn.style.opacity = '1';
+                setPlayBtn(ICON_PAUSE, tr.pause);
+                status.innerText = `${arabicData.englishName} — ${tr.wordByWord}`;
+                if (stickyPlayer) stickyPlayer.classList.remove('hidden');
+                if (stickyPlayBtn) render(stickyPlayBtn, ICON_PAUSE);
+
+                audioPlayer.onended = () => {
+                    const trEnd = i18n[state.currentLang];
+                    status.innerText = trEnd.fin;
+                    setPlayBtn(ICON_PLAY, trEnd.reListen);
+                    currentAudioData = null;
+                    document.querySelectorAll('.wbw-word.wbw-active').forEach(el => el.classList.remove('wbw-active'));
+                    if (stickyPlayer) stickyPlayer.classList.add('hidden');
+                };
+                audioPlayer.onerror = () => {
+                    status.innerText = tr.notAvailable;
+                    setPlayBtn(ICON_PLAY, tr.listen);
+                    currentAudioData = null;
+                };
+            } else {
+                status.innerText      = tr.notAvailable;
+                playBtn.disabled      = false;
+                playBtn.style.opacity = '1';
+            }
+            return;
+        }
 
         const reciterInfo = state.reciters.find(r => r.identifier === selectedReciterId);
         const isVBV       = reciterInfo?.type === 'versebyverse';

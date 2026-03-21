@@ -670,6 +670,28 @@ main {
     font-size: 0.78rem;
 }
 
+/* ── Word-by-word highlighting ───────────────────────────────────────────── */
+.text-wbw {
+    direction: rtl;
+    text-align: right;
+    line-height: 2.2;
+}
+
+.wbw-word {
+    display: inline;
+    padding: 0.1em 0.15em;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.15s;
+    cursor: default;
+}
+
+.wbw-word.wbw-active {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+}
+
 /* ── Range repeat panel ──────────────────────────────────────────────────── */
 .range-repeat-panel {
     margin-top: 1rem;
