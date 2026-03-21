@@ -30,6 +30,20 @@ const TAJWEED_LEGEND = {
     ghn:               { fr: ['Ghunna',               'Nasalisation 2 temps'],          en: ['Ghunna',               '2-beat nasalization']            }
 };
 
+// ── Localize tajweed tooltip descriptions using TAJWEED_LEGEND ───────────────
+function localizeDescription(parsedHtml, lang) {
+    return tajweedParser.getMeta().reduce((html, meta) => {
+        const legend = TAJWEED_LEGEND[meta.default_css_class];
+        if (!legend) return html;
+        const localName = lang === 'fr' ? legend.fr[0] : legend.en[0];
+        const escaped = meta.description.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return html.replace(
+            new RegExp(`data-description="${escaped}"`, 'g'),
+            `data-description="${localName}"`
+        );
+    }, parsedHtml);
+}
+
 // ── SVG icons ──────────────────────────────────────────────────────────────────
 const ICON_PLAY  = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
 const ICON_PAUSE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
@@ -44,13 +58,14 @@ export async function renderSurahReader(id) {
     state.currentSurahId = id;
     showLoading();
 
-    const [arabicData, translationData, translitData] = await Promise.all([
+    const [arabicData, arabicPlain, translationData, translitData] = await Promise.all([
         fetchSurahDetail(id, 'quran-tajweed'),
+        fetchSurahDetail(id, 'quran-uthmani'),
         fetchTranslation(id, state.selectedTranslationId),
         fetchTransliteration(id)
     ]);
 
-    if (!arabicData || !translationData) {
+    if (!arabicData || !arabicPlain || !translationData) {
         render(app, `<div class="error">${t.error}</div>`);
         return;
     }
@@ -83,6 +98,10 @@ export async function renderSurahReader(id) {
             </div>`;
         }).join('');
 
+    // ── Pré-calcul des deux versions de texte ─────────────────────────────────
+    const tajweedTexts = arabicData.ayahs.map(a => localizeDescription(tajweedParser.parse(a.text), state.currentLang));
+    const plainTexts   = arabicPlain.ayahs.map(a => a.text);
+
     // ── Ayah cards ────────────────────────────────────────────────────────────
     const ayahCards = arabicData.ayahs.map((ayah, index) => {
         const bookmarked   = isBookmarked(id, ayah.numberInSurah);
@@ -105,7 +124,10 @@ export async function renderSurahReader(id) {
                             </button>
                         </div>
                     </div>
-                    <div class="ayah-text${tajweedOn ? '' : ' no-tajweed'}${memClass}" lang="ar">${tajweedParser.parse(ayah.text)}</div>
+                    <div class="ayah-text${memClass}" lang="ar">
+                        <span class="text-tajweed${tajweedOn ? '' : ' hidden'}">${tajweedTexts[index]}</span>
+                        <span class="text-plain${tajweedOn ? ' hidden' : ''}">${plainTexts[index]}</span>
+                    </div>
                     ${translitText ? `<div class="ayah-translit${translitOn ? '' : ' hidden'}">${translitText}</div>` : ''}
                     <div class="ayah-translation">${translationData.ayahs[index].text}</div>
                     <div class="tafsir-body hidden" data-index="${index}"></div>
@@ -217,7 +239,8 @@ export async function renderSurahReader(id) {
         this.classList.toggle('active', on);
         this.setAttribute('aria-pressed', String(on));
         storage.set('tajweedOn', on);
-        document.querySelectorAll('.ayah-text').forEach(el => el.classList.toggle('no-tajweed', !on));
+        document.querySelectorAll('.text-tajweed').forEach(el => el.classList.toggle('hidden', !on));
+        document.querySelectorAll('.text-plain').forEach(el => el.classList.toggle('hidden', on));
         if (!on) {
             document.getElementById('tajweed-legend-panel').classList.add('hidden');
             document.getElementById('legend-toggle').classList.remove('active');
