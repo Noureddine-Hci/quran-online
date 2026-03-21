@@ -21,7 +21,7 @@ export async function fetchSurahList() {
 
 export async function fetchSurahDetail(id, edition = 'quran-uthmani') {
     try {
-        const res  = await fetch(`${BASE_URL}/surah/${id}/${edition}`);
+        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${edition}`);
         const data = await res.json();
         return data.data;
     } catch (e) {
@@ -32,7 +32,7 @@ export async function fetchSurahDetail(id, edition = 'quran-uthmani') {
 
 export async function fetchTranslation(id, lang = 'fr.hamidullah') {
     try {
-        const res  = await fetch(`${BASE_URL}/surah/${id}/${lang}`);
+        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${lang}`);
         const data = await res.json();
         return data.data;
     } catch (e) {
@@ -43,7 +43,7 @@ export async function fetchTranslation(id, lang = 'fr.hamidullah') {
 
 export async function fetchAudio(id, edition = 'ar.alafasy') {
     try {
-        const res  = await fetch(`${BASE_URL}/surah/${id}/${edition}`);
+        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${edition}`);
         const data = await res.json();
         return data.data;
     } catch (e) {

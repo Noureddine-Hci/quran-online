@@ -54,6 +54,10 @@ const ICON_EYE   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
 
 // ── View ───────────────────────────────────────────────────────────────────────
 export async function renderSurahReader(id) {
+    if (window._readerAbort) window._readerAbort.abort();
+    window._readerAbort = new AbortController();
+    const readerSignal = window._readerAbort.signal;
+
     const t = i18n[state.currentLang];
     state.currentSurahId = id;
     showLoading();
@@ -614,7 +618,7 @@ export async function renderSurahReader(id) {
 
     window.addEventListener('click', e => {
         if (!customSelect.contains(e.target)) customSelect.classList.remove('open');
-    });
+    }, { signal: readerSignal });
 
     // ── Play / Pause button ───────────────────────────────────────────────────
     playBtn.addEventListener('click', async () => {

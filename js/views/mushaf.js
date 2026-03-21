@@ -134,7 +134,7 @@ export async function renderMushaf(pageNum) {
         if (e.target.tagName === 'INPUT') return;
         if (e.key === 'ArrowRight' && page > 1)           navigate(`/mushaf/${page - 1}`);
         if (e.key === 'ArrowLeft'  && page < TOTAL_PAGES)  navigate(`/mushaf/${page + 1}`);
-    }, { once: true });
+    });
 
     // Swipe navigation (mobile)
     let touchStartX = 0;

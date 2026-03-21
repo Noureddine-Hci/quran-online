@@ -18,6 +18,7 @@ const STATIC_ASSETS = [
     './js/i18n.js',
     './js/storage.js',
     './js/views/list.js',
+    './js/views/mushaf.js',
     './js/tajweed.js',
     './js/views/reader.js',
     './js/views/bookmarks.js',

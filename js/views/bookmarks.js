@@ -84,13 +84,26 @@ export function renderBookmarks() {
     });
 
     document.querySelectorAll('.bookmark-group-header').forEach(h => {
-        h.addEventListener('click', () => navigate(`/surah/${h.dataset.id}`));
+        h.addEventListener('click', () => {
+            const firstAyah = bm[h.dataset.id] ? Math.min(...bm[h.dataset.id]) : null;
+            navigate(`/surah/${h.dataset.id}`);
+            if (firstAyah !== null) {
+                setTimeout(() => {
+                    const ayahEl = document.querySelector(`.ayah-card[data-ayah-num="${firstAyah}"]`);
+                    if (ayahEl) ayahEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            }
+        });
     });
 
     document.querySelectorAll('.bm-goto').forEach(btn => {
         btn.addEventListener('click', e => {
             e.stopPropagation();
             navigate(`/surah/${btn.dataset.surah}`);
+            setTimeout(() => {
+                const ayahEl = document.querySelector(`.ayah-card[data-ayah-num="${btn.dataset.ayah}"]`);
+                if (ayahEl) ayahEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
         });
     });
 

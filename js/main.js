@@ -69,7 +69,7 @@ function renderLangSelector() {
     render(container, `
         <div id="lang-custom-select" class="custom-select glass header-select">
             <div class="custom-select-trigger">
-                <span id="selected-lang-name">${availableLangs.find(l => l.code === state.currentLang).name}</span>
+                <span id="selected-lang-name">${(availableLangs.find(l => l.code === state.currentLang) || availableLangs[0]).name}</span>
                 <div class="arrow"></div>
             </div>
             <div class="custom-options glass">
