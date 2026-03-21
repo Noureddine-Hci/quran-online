@@ -71,7 +71,15 @@ export const i18n = {
         mushafPrev:        'Page précédente',
         mushafNext:        'Page suivante',
         mushafGoTo:        'Aller à la page',
-        mushafClickAyah:   'Cliquez sur un verset pour l\'étudier'
+        mushafClickAyah:   'Cliquez sur un verset pour l\'étudier',
+        rangeRepeat:       'Répéter plage',
+        rangeFrom:         'Du verset',
+        rangeTo:           'Au verset',
+        rangeTimes:        'fois',
+        rangeStart:        'Lancer',
+        rangeStop:         'Arrêter',
+        rangeStatus:       'Répétition',
+        rangeOf:           'sur'
     },
     en: {
         heroTitle:         'The Holy Quran',
@@ -140,6 +148,14 @@ export const i18n = {
         mushafPrev:        'Previous page',
         mushafNext:        'Next page',
         mushafGoTo:        'Go to page',
-        mushafClickAyah:   'Click an ayah to study it'
+        mushafClickAyah:   'Click an ayah to study it',
+        rangeRepeat:       'Range repeat',
+        rangeFrom:         'From ayah',
+        rangeTo:           'To ayah',
+        rangeTimes:        'times',
+        rangeStart:        'Start',
+        rangeStop:         'Stop',
+        rangeStatus:       'Repeating',
+        rangeOf:           'of'
     }
 };

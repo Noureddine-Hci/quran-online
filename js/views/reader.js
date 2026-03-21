@@ -134,7 +134,7 @@ export async function renderSurahReader(id) {
                 </div>`;
     }).join('');
 
-    const speedOptions = [0.75, 1, 1.25, 1.5];
+    const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 
     render(app, `
         <div class="reader-container">
@@ -166,6 +166,9 @@ export async function renderSurahReader(id) {
                     <button id="mem-toggle" class="toggle-btn${memMode ? ' active' : ''}" aria-pressed="${memMode}">
                         ${ICON_EYE} ${t.memMode}
                     </button>
+                    <button id="range-repeat-toggle" class="toggle-btn" aria-expanded="false">
+                        ${ICON_LOOP} ${t.rangeRepeat}
+                    </button>
                     <div class="speed-btns" role="group" aria-label="${t.speedLabel}">
                         <span class="speed-label">${t.speedLabel}</span>
                         ${speedOptions.map(s => `<button class="speed-btn${s === savedSpeed ? ' active' : ''}" data-speed="${s}">×${s}</button>`).join('')}
@@ -183,6 +186,26 @@ export async function renderSurahReader(id) {
                 <!-- Tajweed legend -->
                 <div id="tajweed-legend-panel" class="tajweed-legend glass hidden" aria-hidden="true">
                     <div class="legend-grid">${legendItems}</div>
+                </div>
+
+                <!-- Range repeat panel -->
+                <div id="range-repeat-panel" class="range-repeat-panel glass hidden" aria-hidden="true">
+                    <div class="range-repeat-row">
+                        <label>${t.rangeFrom}
+                            <input type="number" id="range-from" class="range-input glass" min="1" max="${arabicData.numberOfAyahs}" value="1">
+                        </label>
+                        <label>${t.rangeTo}
+                            <input type="number" id="range-to" class="range-input glass" min="1" max="${arabicData.numberOfAyahs}" value="${arabicData.numberOfAyahs}">
+                        </label>
+                        <label>${t.rangeTimes}
+                            <input type="number" id="range-times" class="range-input glass" min="1" max="99" value="3">
+                        </label>
+                    </div>
+                    <div class="range-repeat-actions">
+                        <button id="range-start-btn" class="btn-primary">${t.rangeStart}</button>
+                        <button id="range-stop-btn" class="btn-secondary hidden">${t.rangeStop}</button>
+                        <span id="range-status" class="range-status"></span>
+                    </div>
                 </div>
 
                 <!-- Audio controls -->
@@ -414,6 +437,62 @@ export async function renderSurahReader(id) {
         stickyObserver.observe(audioSection);
     }
 
+    // ── Range repeat toggle ─────────────────────────────────────────────────
+    const rangeToggleBtn = document.getElementById('range-repeat-toggle');
+    const rangePanel     = document.getElementById('range-repeat-panel');
+    const rangeFromInput = document.getElementById('range-from');
+    const rangeToInput   = document.getElementById('range-to');
+    const rangeTimesInput= document.getElementById('range-times');
+    const rangeStartBtn  = document.getElementById('range-start-btn');
+    const rangeStopBtn   = document.getElementById('range-stop-btn');
+    const rangeStatusEl  = document.getElementById('range-status');
+
+    let rangeActive    = false;
+    let rangeFromVal   = 1;
+    let rangeToVal     = arabicData.numberOfAyahs;
+    let rangeTimesVal  = 3;
+    let rangeCurrentRound = 0;
+
+    rangeToggleBtn.addEventListener('click', function () {
+        const shown = !rangePanel.classList.contains('hidden');
+        rangePanel.classList.toggle('hidden', shown);
+        rangePanel.setAttribute('aria-hidden', String(shown));
+        this.classList.toggle('active', !shown);
+        this.setAttribute('aria-expanded', String(!shown));
+    });
+
+    const startRangeRepeat = () => {
+        rangeFromVal  = Math.max(1, Math.min(arabicData.numberOfAyahs, parseInt(rangeFromInput.value, 10) || 1));
+        rangeToVal    = Math.max(rangeFromVal, Math.min(arabicData.numberOfAyahs, parseInt(rangeToInput.value, 10) || arabicData.numberOfAyahs));
+        rangeTimesVal = Math.max(1, parseInt(rangeTimesInput.value, 10) || 3);
+        rangeCurrentRound = 1;
+        rangeActive = true;
+        rangeStartBtn.classList.add('hidden');
+        rangeStopBtn.classList.remove('hidden');
+        rangeStatusEl.textContent = `${t.rangeStatus} 1 ${t.rangeOf} ${rangeTimesVal}`;
+    };
+
+    const stopRangeRepeat = () => {
+        rangeActive = false;
+        rangeCurrentRound = 0;
+        rangeStartBtn.classList.remove('hidden');
+        rangeStopBtn.classList.add('hidden');
+        rangeStatusEl.textContent = '';
+    };
+
+    rangeStartBtn.addEventListener('click', async () => {
+        startRangeRepeat();
+        if (!currentAudioData) {
+            playBtn.click();
+        } else {
+            currentAyahIndex = rangeFromVal - 1;
+            playAyah(currentAyahIndex);
+            setPlayBtn(ICON_PAUSE, t.pause);
+        }
+    });
+
+    rangeStopBtn.addEventListener('click', stopRangeRepeat);
+
     let selectedReciterId = savedReciter;
     let currentAudioData  = null;
     let currentAyahIndex  = 0;
@@ -564,7 +643,7 @@ export async function renderSurahReader(id) {
             currentAudioData = await fetchAudio(id, selectedReciterId);
 
             if (currentAudioData?.ayahs?.length > 0) {
-                currentAyahIndex = 0;
+                currentAyahIndex = rangeActive ? rangeFromVal - 1 : 0;
                 playAyah(currentAyahIndex);
                 playBtn.disabled      = false;
                 playBtn.style.opacity = '1';
@@ -573,19 +652,43 @@ export async function renderSurahReader(id) {
                 audioPlayer.onended = () => {
                     if (loopAyahIndex >= 0) {
                         playAyah(loopAyahIndex);
-                    } else {
+                        return;
+                    }
+
+                    // ── Range repeat logic ──────────────────────────────────
+                    if (rangeActive) {
                         currentAyahIndex++;
-                        if (currentAyahIndex < currentAudioData.ayahs.length) {
+                        if (currentAyahIndex <= rangeToVal - 1) {
                             playAyah(currentAyahIndex);
                         } else {
-                            const trEnd = i18n[state.currentLang];
-                            status.innerText = trEnd.fin;
-                            setPlayBtn(ICON_PLAY, trEnd.reListen);
-                            document.querySelectorAll('.ayah-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
-                            document.querySelectorAll('.loop-btn').forEach(b => b.classList.remove('active'));
-                            currentAudioData = null;
-                            loopAyahIndex    = -1;
+                            rangeCurrentRound++;
+                            if (rangeCurrentRound <= rangeTimesVal) {
+                                currentAyahIndex = rangeFromVal - 1;
+                                rangeStatusEl.textContent = `${i18n[state.currentLang].rangeStatus} ${rangeCurrentRound} ${i18n[state.currentLang].rangeOf} ${rangeTimesVal}`;
+                                playAyah(currentAyahIndex);
+                            } else {
+                                stopRangeRepeat();
+                                const trEnd = i18n[state.currentLang];
+                                status.innerText = trEnd.fin;
+                                setPlayBtn(ICON_PLAY, trEnd.reListen);
+                                document.querySelectorAll('.ayah-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
+                                currentAudioData = null;
+                            }
                         }
+                        return;
+                    }
+
+                    currentAyahIndex++;
+                    if (currentAyahIndex < currentAudioData.ayahs.length) {
+                        playAyah(currentAyahIndex);
+                    } else {
+                        const trEnd = i18n[state.currentLang];
+                        status.innerText = trEnd.fin;
+                        setPlayBtn(ICON_PLAY, trEnd.reListen);
+                        document.querySelectorAll('.ayah-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
+                        document.querySelectorAll('.loop-btn').forEach(b => b.classList.remove('active'));
+                        currentAudioData = null;
+                        loopAyahIndex    = -1;
                     }
                 };
             } else {
