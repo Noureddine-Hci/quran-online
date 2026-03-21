@@ -8,6 +8,7 @@ import { renderSurahList }    from './views/list.js';
 import { renderSurahReader }  from './views/reader.js';
 import { renderBookmarks }    from './views/bookmarks.js';
 import { renderStats }        from './views/stats.js';
+import { renderMushaf }       from './views/mushaf.js';
 import { initReminder }       from './reminder.js';
 
 // ── Route handler ─────────────────────────────────────────────────────────────
@@ -15,6 +16,7 @@ async function handleRoute() {
     if (state.surahs.length === 0) return;
     const route = getRoute();
     if      (route.view === 'reader')    await renderSurahReader(route.id);
+    else if (route.view === 'mushaf')    await renderMushaf(route.page);
     else if (route.view === 'bookmarks') renderBookmarks();
     else if (route.view === 'stats')     renderStats();
     else                                 renderSurahList();
@@ -191,7 +193,8 @@ document.getElementById('stats-nav-btn').addEventListener('click', () => navigat
             const isActive = (target === '/' && (hash === '#/' || hash === '#' || hash === ''))
                 || (target === '/bookmarks' && hash === '#/bookmarks')
                 || (target === '/stats' && hash === '#/stats')
-                || (target !== '/' && target !== '/bookmarks' && target !== '/stats' && target !== 'search' && hash.startsWith('#' + target));
+                || (target === '/mushaf' && hash.startsWith('#/mushaf'))
+                || (target !== '/' && target !== '/bookmarks' && target !== '/stats' && target !== '/mushaf' && target !== 'search' && hash.startsWith('#' + target));
             btn.classList.toggle('active', isActive);
         });
     };

@@ -74,6 +74,17 @@ export async function fetchTafsir(id, edition = 'en.maarifulquran') {
     }
 }
 
+export async function fetchMushafPage(page, edition = 'quran-tajweed') {
+    try {
+        const res  = await fetchWithTimeout(`${BASE_URL}/page/${page}/${edition}`);
+        const data = await res.json();
+        return data.data;
+    } catch (e) {
+        console.error('fetchMushafPage:', e);
+        return null;
+    }
+}
+
 export async function fetchReciters() {
     try {
         const res  = await fetchWithTimeout(`${BASE_URL}/edition?format=audio&language=ar`);

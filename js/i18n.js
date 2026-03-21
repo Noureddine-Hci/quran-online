@@ -63,7 +63,15 @@ export const i18n = {
         memMode:           'Mémorisation',
         memReveal:         'Révéler',
         memHideAll:        'Tout cacher',
-        memShowAll:        'Tout montrer'
+        memShowAll:        'Tout montrer',
+        mushaf:            'Mushaf',
+        mushafTitle:       'Mushaf Al-Madinah',
+        mushafPage:        'Page',
+        mushafOf:          'sur',
+        mushafPrev:        'Page précédente',
+        mushafNext:        'Page suivante',
+        mushafGoTo:        'Aller à la page',
+        mushafClickAyah:   'Cliquez sur un verset pour l\'étudier'
     },
     en: {
         heroTitle:         'The Holy Quran',
@@ -124,6 +132,14 @@ export const i18n = {
         memMode:           'Memorize',
         memReveal:         'Reveal',
         memHideAll:        'Hide all',
-        memShowAll:        'Show all'
+        memShowAll:        'Show all',
+        mushaf:            'Mushaf',
+        mushafTitle:       'Mushaf Al-Madinah',
+        mushafPage:        'Page',
+        mushafOf:          'of',
+        mushafPrev:        'Previous page',
+        mushafNext:        'Next page',
+        mushafGoTo:        'Go to page',
+        mushafClickAyah:   'Click an ayah to study it'
     }
 };

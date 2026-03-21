@@ -2,6 +2,8 @@ export function getRoute() {
     const hash = window.location.hash;
     if (hash === '#/bookmarks') return { view: 'bookmarks' };
     if (hash === '#/stats')     return { view: 'stats' };
+    const mushafMatch = hash.match(/^#\/mushaf(?:\/(\d+))?$/);
+    if (mushafMatch) return { view: 'mushaf', page: mushafMatch[1] || '1' };
     const match = hash.match(/^#\/surah\/(\d+)$/);
     if (match) return { view: 'reader', id: match[1] };
     return { view: 'list' };
