@@ -707,6 +707,9 @@ main {
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
+/* ── Tajweed / plain text spans ───────────────────────────────────────────── */
+.text-tajweed, .text-plain { display: block; }
+
 /* ── No-tajweed mode ──────────────────────────────────────────────────────── */
 .ayah-text.no-tajweed tajweed { color: inherit !important; }
 
