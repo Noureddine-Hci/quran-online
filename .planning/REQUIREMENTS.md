@@ -28,6 +28,14 @@
 - [ ] **AUD-03**: Suivi mot par mot : chaque mot est mis en évidence au fur et à mesure de la récitation
 - [ ] **AUD-04**: Contrôle de vitesse de récitation fin (0.5x, 0.75x, 1x, 1.25x, 1.5x)
 
+### PWA & Play Store
+
+- [ ] **PWA-01**: L'app a un `manifest.json` valide (nom, icônes, couleurs, orientation)
+- [ ] **PWA-02**: Un service worker fournit un fallback offline (page "pas de connexion")
+- [ ] **PWA-03**: L'app est installable sur Android depuis le navigateur
+- [ ] **PWA-04**: Un fichier `assetlinks.json` lie le domaine au package Android
+- [ ] **PWA-05**: Un AAB signé est généré et soumis au Play Store
+
 ## v2 Requirements
 
 ### Recherche
@@ -74,10 +82,15 @@
 | AUD-02 | Phase 3 | Pending |
 | AUD-03 | Phase 3 | Pending |
 | AUD-04 | Phase 3 | Pending |
+| PWA-01 | Phase 4 | Pending |
+| PWA-02 | Phase 4 | Pending |
+| PWA-03 | Phase 4 | Pending |
+| PWA-04 | Phase 4 | Pending |
+| PWA-05 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 14 total
-- Mapped to phases: 14
+- v1 requirements: 19 total
+- Mapped to phases: 19
 - Unmapped: 0 ✓
 
 ---

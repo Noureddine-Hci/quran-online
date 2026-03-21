@@ -61,6 +61,25 @@
 
 ---
 
+## Phase 4 — PWA + Play Store
+
+**Goal:** Publier l'app sur le Google Play Store via TWA (Trusted Web Activity)
+**Requirements:** PWA-01 à PWA-05
+
+**Plans:**
+- 4.1 — PWA foundation : `manifest.json` (nom, icônes, thème), service worker basique (offline fallback)
+- 4.2 — Assets Play Store : icônes toutes tailles, splash screen, screenshots
+- 4.3 — TWA setup : `assetlinks.json`, Bubblewrap ou PWABuilder → génération APK/AAB
+- 4.4 — Soumission Play Store : fiche app, politique de confidentialité, review
+
+**Success criteria:**
+- [ ] L'app s'installe sur Android via le navigateur (bouton "Ajouter à l'écran d'accueil")
+- [ ] L'app fonctionne offline (page de fallback si pas de connexion)
+- [ ] APK/AAB généré sans erreur par PWABuilder
+- [ ] App soumise et visible sur le Play Store
+
+---
+
 ## Backlog (v2)
 
 - Recherche par mot-clé arabe / traduction
