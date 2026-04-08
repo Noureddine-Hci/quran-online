@@ -261,6 +261,21 @@ main {
     margin: 0 auto;
 }
 
+/* ── Reader hero (surah header) ───────────────────────────────────────────── */
+.reader-hero {
+    margin: 2rem 0;
+    padding: 2rem;
+    text-align: center;
+}
+
+.reader-surah-name {
+    font-family: var(--font-arabic);
+    font-size: 3rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+    color: var(--text-main);
+}
+
 .ayah-card {
     margin-bottom: 1.5rem;
     padding: 2rem;
@@ -580,9 +595,17 @@ main {
 /* ── Reader toggles bar ───────────────────────────────────────────────────── */
 .reader-toggles {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.6rem;
     margin-top: 1.5rem;
+    align-items: center;
+}
+
+.reader-toggle-row,
+.reader-settings-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
 }
@@ -1276,6 +1299,40 @@ main {
         padding: 0;
         max-width: 100%;
     }
+
+    .reader-hero {
+        margin: 0.5rem 0;
+        padding: 1rem 0.75rem;
+        border-radius: 14px;
+    }
+
+    .reader-surah-name {
+        font-size: 2.4rem;
+    }
+
+    .reader-toggles {
+        gap: 0.4rem;
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .reader-toggle-row,
+    .reader-settings-row {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        width: 100%;
+        padding-bottom: 3px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .reader-toggle-row::-webkit-scrollbar,
+    .reader-settings-row::-webkit-scrollbar { display: none; }
+
+    .toggle-btn,
+    .speed-btns,
+    .font-size-controls { flex-shrink: 0; }
 
     .ayah-list {
         padding: 0 0.25rem;

@@ -168,8 +168,8 @@ export async function renderSurahReader(id, scrollToAyah = null) {
 
     render(app, `
         <div class="reader-container">
-            <div class="hero glass" style="margin-top:2rem;margin-bottom:2rem;padding:2rem;">
-                <h2 class="surah-name-ar" style="font-size:3rem;" lang="ar">${arabicData.name}</h2>
+            <div class="reader-hero glass">
+                <h2 class="reader-surah-name" lang="ar">${arabicData.name}</h2>
                 <h3 style="color:var(--accent);">${arabicData.englishName}</h3>
                 <p>${arabicData.englishNameTranslation} &bull; ${revType} &bull; ${arabicData.numberOfAyahs} ${t.versets}</p>
 
@@ -179,42 +179,47 @@ export async function renderSurahReader(id, scrollToAyah = null) {
                     <button id="jump-btn" class="glass">${t.jumpGo}</button>
                 </div>
 
-                <!-- Reader toggles -->
+                <!-- Reader controls — row 1: feature toggles -->
                 <div class="reader-toggles">
-                    <button id="tajweed-toggle" class="toggle-btn${tajweedOn ? ' active' : ''}" aria-pressed="${tajweedOn}" style="display:none">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg>
-                        Tajweed
-                    </button>
-                    <button id="translit-toggle" class="toggle-btn${translitOn ? ' active' : ''}" aria-pressed="${translitOn}">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-                        ${t.translitToggle}
-                    </button>
-                    <button id="legend-toggle" class="toggle-btn" aria-expanded="false" style="display:none">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        ${t.tajweedLegend}
-                    </button>
-                    <button id="mem-toggle" class="toggle-btn${memMode ? ' active' : ''}" aria-pressed="${memMode}">
-                        ${ICON_EYE} ${t.memMode}
-                    </button>
-                    <button id="range-repeat-toggle" class="toggle-btn" aria-expanded="false">
-                        ${ICON_LOOP} ${t.rangeRepeat}
-                    </button>
-                    <button id="wbw-toggle" class="toggle-btn" aria-pressed="false">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        ${t.wordByWord}
-                    </button>
-                    <div class="speed-btns" role="group" aria-label="${t.speedLabel}">
-                        <span class="speed-label">${t.speedLabel}</span>
-                        ${speedOptions.map(s => `<button class="speed-btn${s === savedSpeed ? ' active' : ''}" data-speed="${s}">×${s}</button>`).join('')}
+                    <div class="reader-toggle-row">
+                        <button id="tajweed-toggle" class="toggle-btn" aria-pressed="false" style="display:none">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg>
+                            Tajweed
+                        </button>
+                        <button id="translit-toggle" class="toggle-btn${translitOn ? ' active' : ''}" aria-pressed="${translitOn}">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+                            ${t.translitToggle}
+                        </button>
+                        <button id="legend-toggle" class="toggle-btn" aria-expanded="false" style="display:none">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            ${t.tajweedLegend}
+                        </button>
+                        <button id="mem-toggle" class="toggle-btn${memMode ? ' active' : ''}" aria-pressed="${memMode}">
+                            ${ICON_EYE} ${t.memMode}
+                        </button>
+                        <button id="range-repeat-toggle" class="toggle-btn" aria-expanded="false">
+                            ${ICON_LOOP} ${t.rangeRepeat}
+                        </button>
+                        <button id="wbw-toggle" class="toggle-btn" aria-pressed="false">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            ${t.wordByWord}
+                        </button>
                     </div>
-                    <div class="font-size-controls">
-                        <button class="font-size-btn" id="font-decrease" aria-label="${state.currentLang === 'fr' ? 'Réduire la taille' : 'Decrease size'}">−</button>
-                        <span class="font-size-label" id="font-size-val">${storage.get('arabicFontSize', 100)}%</span>
-                        <button class="font-size-btn" id="font-increase" aria-label="${state.currentLang === 'fr' ? 'Augmenter la taille' : 'Increase size'}">+</button>
+                    <!-- Row 2: speed + font size + oled -->
+                    <div class="reader-settings-row">
+                        <div class="speed-btns" role="group" aria-label="${t.speedLabel}">
+                            <span class="speed-label">${t.speedLabel}</span>
+                            ${speedOptions.map(s => `<button class="speed-btn${s === savedSpeed ? ' active' : ''}" data-speed="${s}">×${s}</button>`).join('')}
+                        </div>
+                        <div class="font-size-controls">
+                            <button class="font-size-btn" id="font-decrease" aria-label="${state.currentLang === 'fr' ? 'Réduire la taille' : 'Decrease size'}">−</button>
+                            <span class="font-size-label" id="font-size-val">${storage.get('arabicFontSize', 100)}%</span>
+                            <button class="font-size-btn" id="font-increase" aria-label="${state.currentLang === 'fr' ? 'Augmenter la taille' : 'Increase size'}">+</button>
+                        </div>
+                        <button id="oled-toggle" class="toggle-btn${storage.get('oled', false) ? ' active' : ''}" aria-pressed="${storage.get('oled', false)}">
+                            OLED
+                        </button>
                     </div>
-                    <button id="oled-toggle" class="toggle-btn${storage.get('oled', false) ? ' active' : ''}" aria-pressed="${storage.get('oled', false)}">
-                        OLED
-                    </button>
                 </div>
 
                 <!-- Tajweed legend -->
