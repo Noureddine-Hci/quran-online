@@ -1,5 +1,16 @@
 const BASE_URL = 'https://api.alquran.cloud/v1';
 
+// ── In-memory session cache (avoids SW roundtrips on back-navigation) ─────────
+const sessionCache = new Map();
+
+async function cachedFetch(url) {
+    if (sessionCache.has(url)) return sessionCache.get(url);
+    const res  = await fetchWithTimeout(url);
+    const data = await res.json();
+    sessionCache.set(url, data.data);
+    return data.data;
+}
+
 // Abort any fetch that takes longer than 10 seconds
 function fetchWithTimeout(url, ms = 10000) {
     const controller = new AbortController();
@@ -21,9 +32,7 @@ export async function fetchSurahList() {
 
 export async function fetchSurahDetail(id, edition = 'quran-uthmani') {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${edition}`);
-        const data = await res.json();
-        return data.data;
+        return await cachedFetch(`${BASE_URL}/surah/${id}/${edition}`);
     } catch (e) {
         console.error('fetchSurahDetail:', e);
         return null;
@@ -32,9 +41,7 @@ export async function fetchSurahDetail(id, edition = 'quran-uthmani') {
 
 export async function fetchTranslation(id, lang = 'fr.hamidullah') {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${lang}`);
-        const data = await res.json();
-        return data.data;
+        return await cachedFetch(`${BASE_URL}/surah/${id}/${lang}`);
     } catch (e) {
         console.error('fetchTranslation:', e);
         return null;
@@ -43,9 +50,7 @@ export async function fetchTranslation(id, lang = 'fr.hamidullah') {
 
 export async function fetchAudio(id, edition = 'ar.alafasy') {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${edition}`);
-        const data = await res.json();
-        return data.data;
+        return await cachedFetch(`${BASE_URL}/surah/${id}/${edition}`);
     } catch (e) {
         console.error('fetchAudio:', e);
         return null;
@@ -54,9 +59,7 @@ export async function fetchAudio(id, edition = 'ar.alafasy') {
 
 export async function fetchTransliteration(id) {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/en.transliteration`);
-        const data = await res.json();
-        return data.data;
+        return await cachedFetch(`${BASE_URL}/surah/${id}/en.transliteration`);
     } catch (e) {
         console.error('fetchTransliteration:', e);
         return null;

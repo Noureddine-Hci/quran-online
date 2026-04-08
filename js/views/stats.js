@@ -113,7 +113,7 @@ export function renderStats() {
     document.getElementById('reset-stats-btn').addEventListener('click', () => {
         const tr = i18n[state.currentLang];
         if (confirm(tr.statsResetConfirm)) {
-            storage.set('stats', null);
+            storage.set('stats', { ayahsRead: 0, surahsSeen: {}, firstSeen: null });
             renderStats();
         }
     });

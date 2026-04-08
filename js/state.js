@@ -11,6 +11,6 @@ export const state = {
 
     // Propriété dérivée : toujours synchronisée avec currentLang
     get selectedTranslationId() {
-        return langConfig[this.currentLang].id;
+        return (langConfig[this.currentLang] || langConfig.fr).id;
     }
 };
