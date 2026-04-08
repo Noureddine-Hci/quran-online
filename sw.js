@@ -1,5 +1,5 @@
 // ── Service Worker — Al-Quran Online ──────────────────────────────────────────
-const CACHE_VERSION  = 'v3';
+const CACHE_VERSION  = 'v4';
 const STATIC_CACHE   = `quran-static-${CACHE_VERSION}`;
 const API_CACHE      = `quran-api-${CACHE_VERSION}`;
 
