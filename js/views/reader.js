@@ -52,11 +52,21 @@ const ICON_SHARE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" 
 const ICON_CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
 const ICON_EYE   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 
+// ── Module-level cleanup handles (memory leak prevention) ─────────────────────
+let readerAbort    = null;
+let readObserver   = null;
+let stickyObserver = null;
+
 // ── View ───────────────────────────────────────────────────────────────────────
-export async function renderSurahReader(id) {
-    if (window._readerAbort) window._readerAbort.abort();
-    window._readerAbort = new AbortController();
-    const readerSignal = window._readerAbort.signal;
+export async function renderSurahReader(id, scrollToAyah = null) {
+    const numId = parseInt(id, 10);
+    if (!Number.isFinite(numId) || numId < 1 || numId > 114) { navigate('/'); return; }
+
+    if (readerAbort) readerAbort.abort();
+    if (readObserver)   { readObserver.disconnect();   readObserver   = null; }
+    if (stickyObserver) { stickyObserver.disconnect(); stickyObserver = null; }
+    readerAbort = new AbortController();
+    const readerSignal = readerAbort.signal;
 
     const t = i18n[state.currentLang];
     state.currentSurahId = id;
@@ -78,7 +88,8 @@ export async function renderSurahReader(id) {
     const savedReciter     = storage.get('reciter', 'ar.alafasy');
     const savedReciterName = state.reciters.find(r => r.identifier === savedReciter)?.name || 'Mishary Rashid Alafasy';
     const revType          = arabicData.revelationType === 'Meccan' ? t.meccan : t.medinan;
-    const tajweedOn        = storage.get('tajweedOn', true);
+    /* TAJWEED DISABLED — patch post-déploiement */
+    const tajweedOn        = false;
     const translitOn       = storage.get('translitOn', false);
     const savedSpeed       = storage.get('audioSpeed', 1);
     const memMode          = storage.get('memMode', false);
@@ -104,7 +115,10 @@ export async function renderSurahReader(id) {
         }).join('');
 
     // ── Pré-calcul des deux versions de texte ─────────────────────────────────
-    const tajweedTexts = arabicData.ayahs.map(a => localizeDescription(tajweedParser.parse(a.text), state.currentLang));
+    // Skip expensive regex processing when Tajweed is disabled
+    const tajweedTexts = tajweedOn
+        ? arabicData.ayahs.map(a => localizeDescription(tajweedParser.parse(a.text), state.currentLang))
+        : arabicData.ayahs.map(() => '');
     const plainTexts   = arabicPlain.ayahs.map(a => a.text);
 
     // ── Word-by-word spans (for highlighting) ───────────────────────────────
@@ -167,7 +181,7 @@ export async function renderSurahReader(id) {
 
                 <!-- Reader toggles -->
                 <div class="reader-toggles">
-                    <button id="tajweed-toggle" class="toggle-btn${tajweedOn ? ' active' : ''}" aria-pressed="${tajweedOn}">
+                    <button id="tajweed-toggle" class="toggle-btn${tajweedOn ? ' active' : ''}" aria-pressed="${tajweedOn}" style="display:none">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg>
                         Tajweed
                     </button>
@@ -175,7 +189,7 @@ export async function renderSurahReader(id) {
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
                         ${t.translitToggle}
                     </button>
-                    <button id="legend-toggle" class="toggle-btn" aria-expanded="false">
+                    <button id="legend-toggle" class="toggle-btn" aria-expanded="false" style="display:none">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                         ${t.tajweedLegend}
                     </button>
@@ -419,7 +433,7 @@ export async function renderSurahReader(id) {
     });
 
     // ── Last read (IntersectionObserver) ──────────────────────────────────────
-    const readObserver = new IntersectionObserver(entries => {
+    readObserver = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 recordAyahRead(id, parseInt(entry.target.dataset.ayahNum, 10), arabicData.ayahs.length);
@@ -447,7 +461,6 @@ export async function renderSurahReader(id) {
     const stickyStopBtn = document.getElementById('sticky-stop-btn');
 
     const audioSection = document.querySelector('.audio-controls');
-    let stickyObserver = null;
     if (audioSection && stickyPlayer) {
         stickyObserver = new IntersectionObserver(([entry]) => {
             const audioEl = document.getElementById('surah-audio');
@@ -531,11 +544,10 @@ export async function renderSurahReader(id) {
                 wbwTimestamps = await fetchWordTimestamps(id);
             }
         } else {
-            // Restore previous view (tajweed or plain)
-            const tajOn = storage.get('tajweedOn', true);
+            // Restore plain text view (tajweed disabled)
             document.querySelectorAll('.text-wbw').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.text-tajweed').forEach(el => el.classList.toggle('hidden', !tajOn));
-            document.querySelectorAll('.text-plain').forEach(el => el.classList.toggle('hidden', tajOn));
+            document.querySelectorAll('.text-tajweed').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.text-plain').forEach(el => el.classList.remove('hidden'));
             document.querySelectorAll('.wbw-word').forEach(el => el.classList.remove('wbw-active'));
         }
     });
@@ -837,7 +849,13 @@ export async function renderSurahReader(id) {
         }
     });
 
-    window.scrollTo(0, 0);
+    if (scrollToAyah) {
+        const ayahNum = parseInt(scrollToAyah, 10);
+        const ayahEl  = document.querySelector(`.ayah-card[data-ayah-num="${ayahNum}"]`);
+        if (ayahEl) ayahEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        window.scrollTo(0, 0);
+    }
 
     // ── Swipe navigation (mobile) ─────────────────────────────────────────────
     let touchStartX = 0;
@@ -847,8 +865,8 @@ export async function renderSurahReader(id) {
         const delta = e.changedTouches[0].screenX - touchStartX;
         if (Math.abs(delta) < 60) return;
         const numId = parseInt(id, 10);
-        if (delta < 0 && numId < 114) navigate(`/surah/${numId + 1}`);
-        if (delta > 0 && numId > 1)   navigate(`/surah/${numId - 1}`);
+        if (delta < 0 && numId < 114) { stopPlayback(); navigate(`/surah/${numId + 1}`); }
+        if (delta > 0 && numId > 1)   { stopPlayback(); navigate(`/surah/${numId - 1}`); }
     }, { passive: true });
 
     // ── Background prefetch of adjacent surahs ────────────────────────────────
@@ -866,5 +884,7 @@ function prefetchAdjacentSurahs(numId) {
     if (numId < 114) ids.push(numId + 1);
     ids.forEach(adjId => {
         fetch(`https://api.alquran.cloud/v1/surah/${adjId}/quran-uthmani`).catch(() => {});
+        fetch(`https://api.alquran.cloud/v1/surah/${adjId}/quran-tajweed`).catch(() => {});
+        fetch(`https://api.alquran.cloud/v1/surah/${adjId}/${state.selectedTranslationId}`).catch(() => {});
     });
 }

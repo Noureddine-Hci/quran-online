@@ -15,7 +15,7 @@ import { initReminder }       from './reminder.js';
 async function handleRoute() {
     if (state.surahs.length === 0) return;
     const route = getRoute();
-    if      (route.view === 'reader')    await renderSurahReader(route.id);
+    if      (route.view === 'reader')    await renderSurahReader(route.id, route.ayah);
     else if (route.view === 'mushaf')    await renderMushaf(route.page);
     else if (route.view === 'bookmarks') renderBookmarks();
     else if (route.view === 'stats')     renderStats();
@@ -59,7 +59,10 @@ function setupScrollHandler() {
 }
 
 // ── Language selector ─────────────────────────────────────────────────────────
+let langSelectorAbort = null;
 function renderLangSelector() {
+    if (langSelectorAbort) langSelectorAbort.abort();
+    langSelectorAbort = new AbortController();
     const container    = document.getElementById('lang-selector-container');
     const availableLangs = [
         { code: 'fr', name: 'Français' },
@@ -102,6 +105,10 @@ function renderLangSelector() {
             }
         });
     });
+
+    document.addEventListener('click', e => {
+        if (!select.contains(e.target)) select.classList.remove('open');
+    }, { signal: langSelectorAbort.signal });
 }
 
 function updateBookmarksNavLabel() {

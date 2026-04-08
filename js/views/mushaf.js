@@ -9,8 +9,13 @@ import { Tajweed }                    from '../tajweed.js';
 const tajweedParser = new Tajweed();
 const TOTAL_PAGES   = 604;
 
+// ── Module-level cleanup handle (memory leak prevention) ──────────────────────
+let mushafAbort = null;
+
 // ── View ────────────────────────────────────────────────────────────────────────
 export async function renderMushaf(pageNum) {
+    if (mushafAbort) mushafAbort.abort();
+    mushafAbort = new AbortController();
     const t    = i18n[state.currentLang];
     const page = Math.max(1, Math.min(TOTAL_PAGES, parseInt(pageNum) || 1));
 
@@ -28,7 +33,8 @@ export async function renderMushaf(pageNum) {
         return;
     }
 
-    const tajweedOn = storage.get('tajweedOn', true);
+    /* TAJWEED DISABLED — patch post-déploiement */
+    const tajweedOn = false;
     const ayahs     = tajweedData.ayahs;
     const plainAyahs = plainData.ayahs;
 
@@ -80,7 +86,7 @@ export async function renderMushaf(pageNum) {
                     <span class="mushaf-page-total">/ ${TOTAL_PAGES}</span>
                 </div>
                 <button class="mushaf-nav-btn" id="mushaf-next" ${page >= TOTAL_PAGES ? 'disabled' : ''} aria-label="${t.mushafNext}">←</button>
-                <button class="mushaf-tajweed-btn icon-btn ${tajweedOn ? 'active' : ''}" id="mushaf-tajweed-toggle" aria-label="Tajweed">🎨</button>
+                <button class="mushaf-tajweed-btn icon-btn ${tajweedOn ? 'active' : ''}" id="mushaf-tajweed-toggle" aria-label="Tajweed" style="display:none">🎨</button>
             </div>
 
             <div class="mushaf-page-container">
@@ -134,7 +140,7 @@ export async function renderMushaf(pageNum) {
         if (e.target.tagName === 'INPUT') return;
         if (e.key === 'ArrowRight' && page > 1)           navigate(`/mushaf/${page - 1}`);
         if (e.key === 'ArrowLeft'  && page < TOTAL_PAGES)  navigate(`/mushaf/${page + 1}`);
-    });
+    }, { signal: mushafAbort.signal });
 
     // Swipe navigation (mobile)
     let touchStartX = 0;
