@@ -209,10 +209,17 @@ main {
     color: inherit;
 }
 
-.surah-card:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--accent);
+@media (hover: hover) {
+    .surah-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--accent);
+    }
+}
+
+.surah-card:active {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 0.07);
 }
 
 .surah-header {
@@ -423,7 +430,9 @@ main {
 .loading {
     display: flex;
     justify-content: center;
+    align-items: center;
     padding: 4rem;
+    min-height: 60vh;
 }
 
 .spinner {
@@ -1211,17 +1220,23 @@ main {
     }
 
     .hero {
-        padding: 2rem 1rem;
-        margin-top: 1rem;
-        margin-bottom: 2rem;
+        padding: 1.25rem 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: 16px;
     }
 
     .hero h1 {
-        font-size: 2rem;
+        font-size: 1.75rem;
+        margin-bottom: 0.4rem;
     }
 
     .hero p {
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+    }
+
+    .search-container {
+        margin: -1rem auto 1.5rem;
     }
 
     .search-bar {
@@ -1391,6 +1406,7 @@ main {
     .bottom-nav { display: flex; }
     body { padding-bottom: 4.5rem; }
     #scroll-top-btn { bottom: 5rem; }
+    .site-footer { display: none; }
 }
 
 .bottom-nav-item {
