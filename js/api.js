@@ -8,11 +8,20 @@ function fetchWithTimeout(url, ms = 10000) {
         .finally(() => clearTimeout(timer));
 }
 
+// Validated AlQuran Cloud fetch: returns `data.data` ONLY for a genuine success.
+// On HTTP errors the API returns 200/4xx with `data` as a STRING message; without
+// this guard that truthy string slips past callers and crashes on `.ayahs.map`.
+async function fetchData(url) {
+    const res  = await fetchWithTimeout(url);
+    const json = await res.json();
+    return (res.ok && json.code === 200 && json.data && typeof json.data === 'object')
+        ? json.data
+        : null;
+}
+
 export async function fetchSurahList() {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah`);
-        const data = await res.json();
-        return data.data;
+        return (await fetchData(`${BASE_URL}/surah`)) || [];
     } catch (e) {
         console.error('fetchSurahList:', e);
         return [];
@@ -21,9 +30,7 @@ export async function fetchSurahList() {
 
 export async function fetchSurahDetail(id, edition = 'quran-uthmani') {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${edition}`);
-        const data = await res.json();
-        return data.data;
+        return await fetchData(`${BASE_URL}/surah/${id}/${edition}`);
     } catch (e) {
         console.error('fetchSurahDetail:', e);
         return null;
@@ -32,9 +39,7 @@ export async function fetchSurahDetail(id, edition = 'quran-uthmani') {
 
 export async function fetchTranslation(id, lang = 'fr.hamidullah') {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${lang}`);
-        const data = await res.json();
-        return data.data;
+        return await fetchData(`${BASE_URL}/surah/${id}/${lang}`);
     } catch (e) {
         console.error('fetchTranslation:', e);
         return null;
@@ -43,9 +48,7 @@ export async function fetchTranslation(id, lang = 'fr.hamidullah') {
 
 export async function fetchAudio(id, edition = 'ar.alafasy') {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${edition}`);
-        const data = await res.json();
-        return data.data;
+        return await fetchData(`${BASE_URL}/surah/${id}/${edition}`);
     } catch (e) {
         console.error('fetchAudio:', e);
         return null;
@@ -54,9 +57,7 @@ export async function fetchAudio(id, edition = 'ar.alafasy') {
 
 export async function fetchTransliteration(id) {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/en.transliteration`);
-        const data = await res.json();
-        return data.data;
+        return await fetchData(`${BASE_URL}/surah/${id}/en.transliteration`);
     } catch (e) {
         console.error('fetchTransliteration:', e);
         return null;
@@ -65,9 +66,7 @@ export async function fetchTransliteration(id) {
 
 export async function fetchTafsir(id, edition = 'en.maarifulquran') {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/surah/${id}/${edition}`);
-        const data = await res.json();
-        return data.data;
+        return await fetchData(`${BASE_URL}/surah/${id}/${edition}`);
     } catch (e) {
         console.error('fetchTafsir:', e);
         return null;
@@ -76,9 +75,7 @@ export async function fetchTafsir(id, edition = 'en.maarifulquran') {
 
 export async function fetchMushafPage(page, edition = 'quran-tajweed') {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/page/${page}/${edition}`);
-        const data = await res.json();
-        return data.data;
+        return await fetchData(`${BASE_URL}/page/${page}/${edition}`);
     } catch (e) {
         console.error('fetchMushafPage:', e);
         return null;
@@ -91,6 +88,7 @@ const QURAN_COM_URL = 'https://api.quran.com/api/v4';
 export async function fetchWordTimestamps(chapter, reciterId = 7) {
     try {
         const res  = await fetchWithTimeout(`${QURAN_COM_URL}/chapter_recitations/${reciterId}/${chapter}?segments=true`);
+        if (!res.ok) return null;
         const data = await res.json();
         return data.audio_file || null;
     } catch (e) {
@@ -102,6 +100,7 @@ export async function fetchWordTimestamps(chapter, reciterId = 7) {
 export async function fetchVerseWords(chapter) {
     try {
         const res  = await fetchWithTimeout(`${QURAN_COM_URL}/verses/by_chapter/${chapter}?words=true&word_fields=text_uthmani&per_page=300`);
+        if (!res.ok) return [];
         const data = await res.json();
         return data.verses || [];
     } catch (e) {
@@ -112,10 +111,9 @@ export async function fetchVerseWords(chapter) {
 
 export async function fetchReciters() {
     try {
-        const res  = await fetchWithTimeout(`${BASE_URL}/edition?format=audio&language=ar`);
-        const data = await res.json();
+        const data = await fetchData(`${BASE_URL}/edition?format=audio&language=ar`);
         // Sort: versebyverse first, then complete, alphabetically within each group
-        return (data.data || []).sort((a, b) => {
+        return (data || []).sort((a, b) => {
             if (a.type === b.type) return a.englishName.localeCompare(b.englishName);
             return a.type === 'versebyverse' ? -1 : 1;
         });

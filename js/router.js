@@ -5,7 +5,10 @@ export function getRoute() {
     const mushafMatch = hash.match(/^#\/mushaf(?:\/(\d+))?$/);
     if (mushafMatch) return { view: 'mushaf', page: mushafMatch[1] || '1' };
     const match = hash.match(/^#\/surah\/(\d+)$/);
-    if (match) return { view: 'reader', id: match[1] };
+    if (match) {
+        const id = parseInt(match[1], 10);
+        if (id >= 1 && id <= 114) return { view: 'reader', id: match[1] };
+    }
     return { view: 'list' };
 }
 
