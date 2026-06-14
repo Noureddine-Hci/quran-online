@@ -11,6 +11,14 @@ const TOTAL_PAGES   = 604;
 
 // ── View ────────────────────────────────────────────────────────────────────────
 export async function renderMushaf(pageNum) {
+    // Tear down the previous render's global listeners so they don't accumulate
+    // (each render adds a document keydown handler closing over a stale `page`).
+    if (window._mushafAbort) window._mushafAbort.abort();
+    window._mushafAbort = new AbortController();
+    const mushafSignal = window._mushafAbort.signal;
+    // Also clean up when navigating away from the Mushaf entirely.
+    window.addEventListener('hashchange', () => window._mushafAbort?.abort(), { signal: mushafSignal, once: true });
+
     const t    = i18n[state.currentLang];
     const page = Math.max(1, Math.min(TOTAL_PAGES, parseInt(pageNum) || 1));
 
@@ -129,24 +137,24 @@ export async function renderMushaf(pageNum) {
         });
     });
 
-    // Keyboard navigation
+    // Keyboard navigation (signal-bound so it is removed on the next render / on leaving)
     document.addEventListener('keydown', function mushafKeys(e) {
         if (e.target.tagName === 'INPUT') return;
         if (e.key === 'ArrowRight' && page > 1)           navigate(`/mushaf/${page - 1}`);
         if (e.key === 'ArrowLeft'  && page < TOTAL_PAGES)  navigate(`/mushaf/${page + 1}`);
-    });
+    }, { signal: mushafSignal });
 
     // Swipe navigation (mobile)
     let touchStartX = 0;
     const container = document.querySelector('.mushaf-page-container');
-    container.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    container.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true, signal: mushafSignal });
     container.addEventListener('touchend', e => {
         const diff = e.changedTouches[0].clientX - touchStartX;
         if (Math.abs(diff) > 60) {
             if (diff > 0 && page > 1)           navigate(`/mushaf/${page - 1}`);
             if (diff < 0 && page < TOTAL_PAGES)  navigate(`/mushaf/${page + 1}`);
         }
-    }, { passive: true });
+    }, { passive: true, signal: mushafSignal });
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────
