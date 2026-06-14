@@ -58,6 +58,11 @@ export async function renderSurahReader(id) {
     window._readerAbort = new AbortController();
     const readerSignal = window._readerAbort.signal;
 
+    // Disconnect IntersectionObservers from the previous render — they are not
+    // tied to the abort signal and would otherwise linger until GC.
+    if (window._readerObservers) window._readerObservers.forEach(o => o?.disconnect());
+    window._readerObservers = [];
+
     const t = i18n[state.currentLang];
     state.currentSurahId = id;
     showLoading();
@@ -247,7 +252,7 @@ export async function renderSurahReader(id) {
                     <div id="audio-status" style="font-size:0.9rem;color:var(--text-muted);" aria-live="polite" aria-atomic="true">${t.ready}</div>
                 </div>
 
-                <button id="back-btn" class="glass" style="margin-top:2rem;padding:0.5rem 1rem;cursor:pointer;color:white;border-radius:8px;">${t.back}</button>
+                <button id="back-btn" class="glass" style="margin-top:2rem;padding:0.5rem 1rem;cursor:pointer;color:var(--text-main);border-radius:8px;">${t.back}</button>
             </div>
             <!-- Sticky mini player -->
             <div id="sticky-player" class="sticky-player hidden">
@@ -336,6 +341,10 @@ export async function renderSurahReader(id) {
     // ── Speed buttons ─────────────────────────────────────────────────────────
     const audioPlayer = document.getElementById('surah-audio');
     audioPlayer.playbackRate = savedSpeed;
+
+    // Stop playback when leaving the reader. Modern browsers already pause a media
+    // element removed from the DOM, but make it explicit for cross-browser safety.
+    window.addEventListener('hashchange', () => audioPlayer.pause(), { signal: readerSignal, once: true });
 
     document.querySelectorAll('.speed-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -433,6 +442,7 @@ export async function renderSurahReader(id) {
         });
     }, { threshold: 0.6 });
     document.querySelectorAll('.ayah-card').forEach(c => readObserver.observe(c));
+    window._readerObservers.push(readObserver);
 
     // ── Audio state ───────────────────────────────────────────────────────────
     const playBtn      = document.getElementById('play-surah-btn');
@@ -455,6 +465,7 @@ export async function renderSurahReader(id) {
             stickyPlayer.classList.toggle('hidden', entry.isIntersecting || !isPlaying);
         }, { threshold: 0 });
         stickyObserver.observe(audioSection);
+        window._readerObservers.push(stickyObserver);
     }
 
     // ── Range repeat toggle ─────────────────────────────────────────────────
@@ -577,7 +588,7 @@ export async function renderSurahReader(id) {
     // ── Word-by-word timeupdate ──────────────────────────────────────────────
     audioPlayer.addEventListener('timeupdate', () => {
         if (wbwMode) highlightWord(audioPlayer.currentTime * 1000);
-    });
+    }, { signal: readerSignal });
 
     const playAyah = index => {
         const tr = i18n[state.currentLang];
