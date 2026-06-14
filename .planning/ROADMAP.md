@@ -67,23 +67,32 @@ Plans:
 
 ---
 
-## Phase 3.5 — Bug Fixes + Stabilisation 🔧 IN PROGRESS
+## Phase 3.5 — Bug Fixes + Stabilisation ✅ DONE
 
 **Goal:** Corriger les bugs identifiés par l'audit de code
+**Completed:** 2026-06-14 — statut établi par audit (lecture + tests dynamiques navigateur)
 
-**Bugs critiques:**
-- [ ] Mushaf keyboard `{ once: true }` — seule la 1ère touche fonctionne
-- [ ] Memory leak — event listeners window.click jamais nettoyés
-- [ ] Service Worker ne cache pas mushaf.js ni tajweed.js
+**Vague 1 — corrigés dans commit 47d6173 (vérifiés dans le code 2026-06-14):**
+- [x] Mushaf keyboard `{ once: true }` retiré (mais avait introduit une cascade — voir STB-02)
+- [x] Memory leak window.click — corrigé via AbortController (reader.js:57-59)
+- [x] Service Worker cache désormais mushaf.js + tajweed.js
+- [x] Bookmarks "Aller à" scroll au verset (race 500ms restante, voir backlog)
+- [x] API timeouts uniformes (fetchWithTimeout sur tous les appels)
+- [~] Lang guard — n'était que cosmétique (étiquette), le crash réel restait → corrigé en STB-05
 
-**Bugs importants:**
-- [ ] Bookmarks "Aller à" ne scroll pas au verset spécifique
-- [ ] API calls sans timeout (fetchSurahDetail, fetchTranslation, fetchAudio)
-- [ ] Lang selector crash si code langue invalide dans localStorage
+**Vague 2 — corrigés cette phase (2026-06-14), vérifiés en live :**
+- [x] **STB-01** API sans `res.ok` → page blanche sur sourate hors borne / 429 / 500
+- [x] **STB-02** Cascade de re-rendus Mushaf (listeners `document` empilés, 3→6→10/frappe)
+- [x] **STB-03** Thème clair non câblé (`.glass` codé en dur, `--glass-bg` undefined, texte arabe blanc)
+- [x] **STB-04** Reset Stats stockait `null` → crash de la vue Stats
+- [x] **STB-05** Crash app entière si code langue invalide en localStorage
+- [x] **STB-06** Résidu mémoire reader (observers/timeupdate non nettoyés) + pause audio défensive
 
-**Bugs mineurs:**
-- [ ] Translitération échoue silencieusement
-- [ ] Stats gonflées par scroll rapide
+**Note audit :** le constat « audio continue après navigation » a été **réfuté en live** — les
+navigateurs modernes mettent en pause tout média retiré du DOM. STB-06 ne traite que le résidu mémoire.
+
+**Restant (déplacé en backlog / Phase 5) :** translittération qui échoue en silence, stats gonflées
+par scroll rapide (back-fill + pas de dwell).
 
 ---
 

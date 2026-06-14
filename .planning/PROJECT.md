@@ -35,8 +35,9 @@ Offrir la lecture du Coran la plus fidèle et la plus belle sur le web — Tajwe
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Bug fixes : mushaf keyboard, memory leak, SW cache, bookmarks nav, API timeouts
-- [ ] Word-by-word highlighting (suivi mot par mot pendant récitation)
+- ✓ Word-by-word highlighting (suivi mot par mot pendant récitation) — Phase 3
+- ✓ Stabilisation : bugs critiques corrigés + vérifiés en live (STB-01..06) — Phase 3.5
+- [ ] Durcissement & qualité : échappement XSS + CSP, a11y (contraste/focus), perf, tests unitaires — Phase 5
 
 ### Out of Scope
 

@@ -13,16 +13,18 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - Phase 1 — Tajweed Standard Mushaf: **DONE** (committed 2026-03-21)
 - Phase 2 — Mode Mushaf: **DONE** (committed 2026-03-21)
 - Phase 3 — Lecteur Audio Avancé: **DONE** (vitesses + range repeat + word-by-word)
+- Phase 3.5 — Bug Fixes + Stabilisation: **DONE** (2026-06-14, STB-01..06 vérifiés en live)
 - Phase 4 — PWA + Play Store: not started (deferred — user says "toute fin")
+- Phase 5 — Durcissement & Qualité: **IN PROGRESS** (HRD-01..04 : XSS/CSP, a11y, perf, tests)
 - Codebase mapped: .planning/codebase/
-- **9 bugs identified** via audit — fixing now
 
 ## Last Action
 
-Phase 3 partial delivery (range repeat + extended speed) — committed + pushed 2026-03-21
+Phase 3.5 Stabilisation — STB-01..06 corrigés + vérifiés en navigateur (preview), 5 commits
+atomiques sur branche `gsd/phase-3.5-stabilisation`. Docs GSD resync. 2026-06-14.
 
 ## Next Step
 
-Fix all identified bugs (keyboard mushaf, memory leak, SW cache, bookmarks navigation, API timeouts, lang selector guard)
-
-Then: word-by-word highlighting (AUD-03) or move to stabilisation/polish
+Phase 5 — Durcissement & Qualité (branche `gsd/phase-5-durcissement`) :
+- HRD-01 échappement XSS + CSP · HRD-02 a11y (contraste Tajweed, focus) · HRD-03 perf (scroll mot-à-mot, debounce) · HRD-04 tests unitaires (vitest)
+- Reste backlog : translittération silencieuse, stats gonflées par scroll (dwell threshold)

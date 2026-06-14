@@ -1,6 +1,14 @@
 # Codebase Concerns
 
 **Analysis Date:** 2026-03-21
+**Resync:** 2026-06-14 — état revérifié par audit (lecture + tests dynamiques navigateur)
+
+> **⚠️ Ce document date du 2026-03-21 ; plusieurs items ci-dessous sont RÉSOLUS.**
+>
+> **Résolus (commit 47d6173) :** timeouts API uniformes · leak window.click (AbortController) · SW cache mushaf.js/tajweed.js.
+> **Résolus (Phase 3.5, 2026-06-14) :** API sans `res.ok` (STB-01) · cascade teardown Mushaf (STB-02) · thème clair + `--glass-bg` (STB-03) · reset Stats `null` (STB-04) · crash langue invalide (STB-05) · observers/timeupdate non nettoyés (STB-06).
+> **Faux positif retiré :** « audio détaché joue jusqu'au GC » — réfuté en live (les navigateurs pausent un média retiré du DOM).
+> **Encore ouverts (Phase 5 / backlog) :** pas de CSP, sinks XSS non échappés, contraste Tajweed sombre/OLED, scroll mot-à-mot, translittération silencieuse, stats gonflées par scroll, aucun test.
 
 ## Tech Debt
 
