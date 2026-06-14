@@ -4,9 +4,13 @@ import { storage } from '../storage.js';
 import { navigate } from '../router.js';
 import { app, render } from '../dom.js';
 
+// Fresh default each call — never share a mutable object across reads/writes.
+const defaultStats = () => ({ ayahsRead: 0, surahsSeen: {}, firstSeen: null });
+
 // ── Reading stats helpers ─────────────────────────────────────────────────────
 export function recordAyahRead(surahId, ayahNum, totalAyahs) {
-    const stats = storage.get('stats', { ayahsRead: 0, surahsSeen: {}, firstSeen: null });
+    // `|| defaultStats()` also coerces a legacy stored "null" back to a usable object.
+    const stats = storage.get('stats', null) || defaultStats();
     if (!stats.firstSeen) stats.firstSeen = Date.now();
     const key = String(surahId);
     if (!stats.surahsSeen[key]) stats.surahsSeen[key] = { seen: 0, total: totalAyahs };
@@ -21,7 +25,7 @@ export function recordAyahRead(surahId, ayahNum, totalAyahs) {
 // ── Stats view ────────────────────────────────────────────────────────────────
 export function renderStats() {
     const t     = i18n[state.currentLang];
-    const stats = storage.get('stats', { ayahsRead: 0, surahsSeen: {}, firstSeen: null });
+    const stats = storage.get('stats', null) || defaultStats();
 
     const ayahsRead     = stats.ayahsRead || 0;
     const surahsStarted = Object.keys(stats.surahsSeen || {}).length;
@@ -99,7 +103,7 @@ export function renderStats() {
                     ${topSurahs}
                 </div>` : ''}
 
-                <button id="back-btn-stats" class="glass" style="margin-top:2rem;padding:0.5rem 1rem;cursor:pointer;color:white;border-radius:8px;border:1px solid var(--glass-border);">${t.back}</button>
+                <button id="back-btn-stats" class="glass" style="margin-top:2rem;padding:0.5rem 1rem;cursor:pointer;color:var(--text-main);border-radius:8px;border:1px solid var(--glass-border);">${t.back}</button>
                 <button id="reset-stats-btn" style="margin-top:2rem;margin-left:1rem;padding:0.5rem 1rem;cursor:pointer;color:#ef4444;background:none;border-radius:8px;border:1px solid rgba(239,68,68,0.3);font-size:0.85rem;">${t.statsReset}</button>
             </div>
         </div>
@@ -113,7 +117,7 @@ export function renderStats() {
     document.getElementById('reset-stats-btn').addEventListener('click', () => {
         const tr = i18n[state.currentLang];
         if (confirm(tr.statsResetConfirm)) {
-            storage.set('stats', null);
+            storage.set('stats', defaultStats());
             renderStats();
         }
     });
