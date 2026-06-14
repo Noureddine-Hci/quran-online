@@ -18,6 +18,7 @@
     --nav-bg-scrolled:rgba(8, 14, 28, 0.97);
     --hero-bg:        linear-gradient(135deg, rgba(4,74,54,0.25) 0%, rgba(10,17,32,0.6) 100%);
     --options-bg:     #111827;
+    --glass-bg:       rgba(255, 255, 255, 0.05);
 }
 
 /* ── Light theme ─────────────────────────────────────────────────────────── */
@@ -32,6 +33,14 @@
     --nav-bg-scrolled:rgba(240, 253, 244, 0.97);
     --hero-bg:        linear-gradient(135deg, rgba(6,95,70,0.1) 0%, rgba(240,253,244,0.7) 100%);
     --options-bg:     #ffffff;
+    --glass-bg:       rgba(0, 0, 0, 0.05);
+}
+
+/* Light theme: replace the dark radial blooms with subtle light tints */
+[data-theme="light"] body {
+    background-image:
+        radial-gradient(at 0% 0%, hsla(161, 60%, 45%, 0.10) 0, transparent 50%),
+        radial-gradient(at 100% 100%, hsla(217, 33%, 55%, 0.08) 0, transparent 50%);
 }
 
 * {
@@ -56,7 +65,7 @@ body {
 
 /* Glassmorphism Classes */
 .glass {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--card-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
@@ -155,7 +164,7 @@ main {
 .hero h1 {
     font-size: 3.5rem;
     margin-bottom: 1rem;
-    background: linear-gradient(to right, #fff, var(--accent));
+    background: linear-gradient(to right, var(--text-main), var(--accent));
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -236,7 +245,7 @@ main {
 .surah-name-ar {
     font-family: var(--font-arabic);
     font-size: 1.5rem;
-    color: white;
+    color: var(--text-main);
 }
 
 .surah-info h3 {
@@ -1441,6 +1450,7 @@ main {
     --nav-bg: rgba(0, 0, 0, 0.9);
     --nav-bg-scrolled: rgba(0, 0, 0, 0.97);
     --card-bg: rgba(255, 255, 255, 0.03);
+    --glass-bg: rgba(255, 255, 255, 0.04);
     --hero-bg: linear-gradient(135deg, rgba(4,74,54,0.15) 0%, rgba(0,0,0,0.6) 100%);
 }
 
